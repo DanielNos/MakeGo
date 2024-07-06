@@ -49,6 +49,11 @@ func fileName(platform string) string {
 	return config.Application.Name + "_" + config.Application.Version + "_" + splitPlatform[0] + "_" + splitPlatform[1]
 }
 
+func platformArchitecture(platformArchitecture string) (string, string) {
+	split := strings.Split(platformArchitecture, "/")
+	return split[0], split[1]
+}
+
 func countPackageFormats() {
 	if config.Package.Apt {
 		packageFormatCount++
@@ -164,7 +169,6 @@ func createFPMConfig() bool {
 	flags := "-s dir\n" +
 		"--name " + config.Application.Name + "\n" +
 		"--version " + config.Application.Version + "\n" +
-		"--architecture amd64\n" +
 		"--description \"" + config.Application.Description + "\"\n" +
 		"--url \"" + config.Application.Url + "\"\n" +
 		"--maintainer \"" + config.Maintainer.Name + " <" + config.Maintainer.Email + ">\"\n"
@@ -227,11 +231,55 @@ func packageApt() {
 		return
 	}
 
-	cmd = exec.Command("fpm", "-t", "deb")
+	// Find packageable binaries
+	platforms := []string{}
+
+	for _, platArch := range config.Build.Platforms {
+		platform, architecture := platformArchitecture(platArch)
+
+		if platform != "linux" {
+			continue
+		}
+
+		if !validDebArch(architecture) {
+			continue
+		}
+
+		platforms = append(platforms, platArch)
+	}
+
+	// Create packages
+	for i, platArch := range platforms {
+		logSubStep(i+1, len(platforms), "Packaging "+platArch+" deb")
+		_, architecture := platformArchitecture(platArch)
+
+		cmd = exec.Command("fpm", "-t", "deb", "--architecture", goArchToDebArch(architecture), fileName(platArch))
+		cmd.Dir = BUILD_FOLDER
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			logError(packageIndex-1, "Failed to package APT. "+string(output))
+			return
+		}
+	}
+}
+
+func packageRpm() {
+	logStep(packageIndex, packageFormatCount, "Packaging RPM")
+	packageIndex++
+
+	// Check if dpkg-deb is installed
+	cmd := exec.Command("rpm", "--version")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		logError(packageIndex-1, "Can't package RPM without rpm installed.")
+		return
+	}
+
+	cmd = exec.Command("fpm", "-t", "rpm")
 	cmd.Dir = BUILD_FOLDER
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logError(packageIndex-1, "Failed to package APT. "+string(output))
+		logError(packageIndex-1, "Failed to package RPM. "+string(output))
 		return
 	}
 }
@@ -249,6 +297,9 @@ func createPackages() {
 	// Package
 	if config.Package.Apt {
 		packageApt()
+	}
+	if config.Package.Rpm {
+		packageRpm()
 	}
 }
 

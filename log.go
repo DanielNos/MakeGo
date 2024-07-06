@@ -24,6 +24,10 @@ func logStep(step, totalSteps int, message string) {
 	fmt.Printf("\033[37m"+time.Now().Format(TIME_FORMAT)+"   \033[97m[%d/%d] \033[94m%s\n", step, totalSteps, message)
 }
 
+func logSubStep(step, totalSteps int, message string) {
+	fmt.Printf("\033[37m"+time.Now().Format(TIME_FORMAT)+"     \033[97m[%d/%d] \033[94m%s\n", step, totalSteps, message)
+}
+
 func logStepError(step, totalSteps int, message string) {
 	fmt.Printf("\033[37m"+time.Now().Format(TIME_FORMAT)+"   \033[97m[%d/%d] \033[91m[ERROR] %s\n", step, totalSteps, message)
 }
