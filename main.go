@@ -170,7 +170,7 @@ func createFPMConfig() bool {
 		"--maintainer \"" + config.Maintainer.Name + " <" + config.Maintainer.Email + ">\"\n"
 
 	if strings.TrimSpace(config.Application.License) != "" {
-		flags += "--license " + config.Application.License + "\n"
+		flags += "--license \"" + config.Application.License + "\"\n"
 	}
 
 	flags += fileName("linux/amd64") + "=/usr/bin/" + config.Application.Name + "\n"
