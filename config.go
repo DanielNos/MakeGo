@@ -4,6 +4,8 @@ type ApplicationConfig struct {
 	Name        string `toml:"name"`
 	Version     string `toml:"version"`
 	Description string `toml:"description"`
+	Url         string `toml:"url"`
+	License     string `toml:"license"`
 }
 
 type BuildConfig struct {
@@ -19,6 +21,7 @@ type MaintainerConfig struct {
 
 type PackagesConfig struct {
 	Apt bool `toml:"apt"`
+	Rpm bool `toml:"rpm"`
 }
 
 type Config struct {

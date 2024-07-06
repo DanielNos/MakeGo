@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -28,6 +29,7 @@ const (
 
 var action Action = A_All
 var packageFormatCount int = 0
+var packageIndex = 1
 var configFile string = "make.toml"
 var config Config
 
@@ -39,10 +41,19 @@ var stringToAction = map[string]Action{
 	"bin":     A_Binary,
 	"package": A_Package,
 	"pkg":     A_Package,
+	"all":     A_All,
+}
+
+func fileName(platform string) string {
+	splitPlatform := strings.Split(platform, "/")
+	return config.Application.Name + "_" + config.Application.Version + "_" + splitPlatform[0] + "_" + splitPlatform[1]
 }
 
 func countPackageFormats() {
 	if config.Package.Apt {
+		packageFormatCount++
+	}
+	if config.Package.Rpm {
 		packageFormatCount++
 	}
 }
@@ -95,6 +106,8 @@ func generateDefault() {
 			"name = \"app\"\n" +
 			"version = \"1.0.0\"\n" +
 			"description = \"My cool application.\"\n\n" +
+			"url = \"https://github.com/Username/app\"\n" +
+			"license = \"\"\n" +
 
 			"[build]\n" +
 			"target = \".\"\n" +
@@ -114,6 +127,63 @@ func generateDefault() {
 	}
 }
 
+func checkRequirments() bool {
+	// Check if OS is linux
+	if runtime.GOOS != "linux" {
+		logError(3, "Can't package on non-linux system.")
+		return false
+	}
+
+	// Check if Ruby is installed
+	cmd := exec.Command("ruby", "--version")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		logError(3, "Can't package RPM without Ruby installed.")
+		return false
+	}
+
+	// Check if FPM is installed
+	cmd = exec.Command("fpm", "--version")
+	_, err = cmd.CombinedOutput()
+	if err != nil {
+		logError(3, "Can't package RPM without FPM installed.")
+		return false
+	}
+
+	return true
+}
+
+func createFPMConfig() bool {
+	file, err := os.Create(BUILD_FOLDER + "/.fpm")
+	if err != nil {
+		logStepError(1, packageFormatCount, "Failed to create config file: "+err.Error())
+		return false
+	}
+	defer file.Close()
+
+	flags := "-s dir\n" +
+		"--name " + config.Application.Name + "\n" +
+		"--version " + config.Application.Version + "\n" +
+		"--architecture amd64\n" +
+		"--description \"" + config.Application.Description + "\"\n" +
+		"--url \"" + config.Application.Url + "\"\n" +
+		"--maintainer \"" + config.Maintainer.Name + " <" + config.Maintainer.Email + ">\"\n"
+
+	if strings.TrimSpace(config.Application.License) != "" {
+		flags += "--license " + config.Application.License + "\n"
+	}
+
+	flags += fileName("linux/amd64") + "=/usr/bin/" + config.Application.Name + "\n"
+
+	_, err = file.WriteString(flags)
+	if err != nil {
+		logStepError(1, packageFormatCount, "Failed to write config file: "+err.Error())
+		return false
+	}
+
+	return true
+}
+
 func clean() {
 	log(1, "Cleaning")
 	os.RemoveAll(PACKAGE_FOLDER)
@@ -128,7 +198,7 @@ func buildBinary() {
 		logStep(i+1, len(config.Build.Platforms), "Building target "+target)
 
 		splitTarget := strings.Split(target, "/")
-		outputPath := BUILD_FOLDER + "/" + config.Application.Name + "_" + splitTarget[0] + "_" + splitTarget[1]
+		outputPath := BUILD_FOLDER + "/" + fileName(target)
 
 		if splitTarget[0] == "windows" {
 			outputPath += ".exe"
@@ -146,60 +216,22 @@ func buildBinary() {
 }
 
 func packageApt() {
-	logStep(1, packageFormatCount, "Packaging APT")
+	logStep(packageIndex, packageFormatCount, "Packaging APT")
+	packageIndex++
 
-	packageName := config.Application.Name + "_" + config.Application.Version + "-amd64"
-	packagePath := PACKAGE_FOLDER + "/" + packageName
-
-	// Create directories
-	os.MkdirAll(packagePath+"/usr/bin", 0755)
-	os.Mkdir(packagePath+"/DEBIAN", 0755)
-
-	// Create control file
-	file, err := os.Create(packagePath + "/DEBIAN/control")
+	// Check if dpkg-deb is installed
+	cmd := exec.Command("dpkg-deb", "--version")
+	_, err := cmd.CombinedOutput()
 	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to create control: "+err.Error())
-		return
-	}
-	defer file.Close()
-
-	_, err = file.WriteString(
-		"Package: " + config.Application.Name + "\n" +
-			"Version: " + config.Application.Version + "\n" +
-			"Architecture: amd64\n" +
-			"Maintainer: " + config.Maintainer.Name + " <" + config.Maintainer.Email + ">\n" +
-			"Description: " + config.Application.Description + "\n",
-	)
-	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to write control: "+err.Error())
+		logError(packageIndex-1, "Can't package APT without dpkg-deb installed.")
 		return
 	}
 
-	// Copy binary
-	binaryDestination := packagePath + "/usr/bin/" + config.Application.Name
-	err = copyFile(BUILD_FOLDER+"/"+config.Application.Name+"_linux_amd64", binaryDestination)
-	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to copy binary: "+err.Error())
-		return
-	}
-
-	err = os.Chmod(binaryDestination, 0755)
-	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to change permissions: "+err.Error())
-		return
-	}
-
-	// Create package
-	cmd := exec.Command("dpkg-deb", "--build", "--root-owner-group", packagePath)
+	cmd = exec.Command("fpm", "-t", "deb")
+	cmd.Dir = BUILD_FOLDER
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to generate package: "+string(output))
-		return
-	}
-
-	err = os.Rename(packagePath+".deb", BUILD_FOLDER+"/"+packageName+".deb")
-	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to move package: "+err.Error())
+		logError(packageIndex-1, "Failed to package APT. "+string(output))
 		return
 	}
 }
@@ -207,8 +239,14 @@ func packageApt() {
 func createPackages() {
 	log(3, "Packaging")
 
-	os.Mkdir(PACKAGE_FOLDER, 0755)
+	meetsRequirements := checkRequirments()
+	if !meetsRequirements {
+		return
+	}
 
+	createFPMConfig()
+
+	// Package
 	if config.Package.Apt {
 		packageApt()
 	}
