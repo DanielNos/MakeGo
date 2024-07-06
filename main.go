@@ -55,7 +55,7 @@ func platformArchitecture(platformArchitecture string) (string, string) {
 }
 
 func countPackageFormats() {
-	if config.Package.Apt {
+	if config.Package.Deb {
 		packageFormatCount++
 	}
 	if config.Package.Rpm {
@@ -124,7 +124,8 @@ func generateDefault() {
 			"email = \"name.surname@email.com\"\n\n" +
 
 			"[package]\n" +
-			"apt = true\n",
+			"deb = true\n" +
+			"rpm = true\n",
 	)
 	if err != nil {
 		logStepError(1, packageFormatCount, "Failed to write config: "+err.Error())
@@ -219,15 +220,15 @@ func buildBinary() {
 	}
 }
 
-func packageApt() {
-	logStep(packageIndex, packageFormatCount, "Packaging APT")
+func packageDeb() {
+	logStep(packageIndex, packageFormatCount, "Packaging DEB")
 	packageIndex++
 
 	// Check if dpkg-deb is installed
 	cmd := exec.Command("dpkg-deb", "--version")
 	_, err := cmd.CombinedOutput()
 	if err != nil {
-		logError(packageIndex-1, "Can't package APT without dpkg-deb installed.")
+		logError(packageIndex-1, "Can't package DEB without dpkg-deb installed.")
 		return
 	}
 
@@ -257,7 +258,7 @@ func packageApt() {
 		cmd.Dir = BUILD_FOLDER
 		output, err := cmd.CombinedOutput()
 		if err != nil {
-			logError(packageIndex-1, "Failed to package APT. "+string(output))
+			logError(packageIndex-1, "Failed to package DEB. "+string(output))
 			return
 		}
 	}
@@ -295,8 +296,8 @@ func createPackages() {
 	createFPMConfig()
 
 	// Package
-	if config.Package.Apt {
-		packageApt()
+	if config.Package.Deb {
+		packageDeb()
 	}
 	if config.Package.Rpm {
 		packageRpm()

@@ -20,7 +20,7 @@ type MaintainerConfig struct {
 }
 
 type PackagesConfig struct {
-	Apt bool `toml:"apt"`
+	Deb bool `toml:"deb"`
 	Rpm bool `toml:"rpm"`
 }
 

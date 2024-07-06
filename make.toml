@@ -3,7 +3,7 @@ name = "makego"
 version = "0.1.0"
 description = "A Go build and packaging tool."
 url = "https://github.com/DanielNos/MakeGo"
-license = ""
+license = "OSL-3.0"
 
 [build]
 target = "."
@@ -18,5 +18,5 @@ name = "Daniel Nos"
 email = "nos.daniel@pm.me"
 
 [package]
-apt = true
+deb = true
 rpm = true
