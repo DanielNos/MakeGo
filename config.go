@@ -1,11 +1,12 @@
 package main
 
 type ApplicationConfig struct {
-	Name        string `toml:"name"`
-	Version     string `toml:"version"`
-	Description string `toml:"description"`
-	Url         string `toml:"url"`
-	License     string `toml:"license"`
+	Name            string `toml:"name"`
+	Version         string `toml:"version"`
+	Url             string `toml:"url"`
+	License         string `toml:"license"`
+	Description     string `toml:"description"`
+	LongDescription string `toml:"long_description"`
 }
 
 type BuildConfig struct {

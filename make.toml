@@ -1,17 +1,15 @@
 [application]
 name = "makego"
 version = "0.1.0"
-description = "A Go build and packaging tool."
 url = "https://github.com/DanielNos/MakeGo"
 license = "OSL-3.0"
+description = "A Go build and packaging tool."
+long_description = "A Go build and packaging tool."
 
 [build]
 target = "."
 flags = "-ldflags=\"-w -s\""
-platforms = [ "linux/amd64", "linux/386", "linux/arm", "linux/arm64",
-                   "windows/amd64", "windows/arm",
-                   "darwin/amd64", "darwin/arm64",
-                   "freebsd/amd64", "freebsd/386", "freebsd/arm" ]
+platforms = [ "linux/amd64" ]
 
 [maintainer]
 name = "Daniel Nos"

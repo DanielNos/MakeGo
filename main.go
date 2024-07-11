@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	BUILD_FOLDER   = "bin"
-	PACKAGE_FOLDER = ".makego_package"
+	BIN_DIR      = "bin"
+	PKG_DIR      = "pkg"
+	PKG_TEMP_DIR = PKG_DIR + "/.pkg_temp"
 )
 
 type Action uint8
@@ -42,6 +43,12 @@ var stringToAction = map[string]Action{
 	"package": A_Package,
 	"pkg":     A_Package,
 	"all":     A_All,
+}
+
+func isInstalled(packageName string) bool {
+	cmd := exec.Command(packageName, "--version")
+	_, err := cmd.CombinedOutput()
+	return err == nil
 }
 
 func fileName(platform string) string {
@@ -134,76 +141,35 @@ func generateDefault() {
 }
 
 func checkRequirments() bool {
-	// Check if OS is linux
 	if runtime.GOOS != "linux" {
 		logError(3, "Can't package on non-linux system.")
 		return false
 	}
-
-	// Check if Ruby is installed
-	cmd := exec.Command("ruby", "--version")
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		logError(3, "Can't package RPM without Ruby installed.")
-		return false
-	}
-
-	// Check if FPM is installed
-	cmd = exec.Command("fpm", "--version")
-	_, err = cmd.CombinedOutput()
-	if err != nil {
-		logError(3, "Can't package RPM without FPM installed.")
-		return false
-	}
-
-	return true
-}
-
-func createFPMConfig() bool {
-	file, err := os.Create(BUILD_FOLDER + "/.fpm")
-	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to create config file: "+err.Error())
-		return false
-	}
-	defer file.Close()
-
-	flags := "-s dir\n" +
-		"--name " + config.Application.Name + "\n" +
-		"--version " + config.Application.Version + "\n" +
-		"--description \"" + config.Application.Description + "\"\n" +
-		"--url \"" + config.Application.Url + "\"\n" +
-		"--maintainer \"" + config.Maintainer.Name + " <" + config.Maintainer.Email + ">\"\n"
-
-	if strings.TrimSpace(config.Application.License) != "" {
-		flags += "--license \"" + config.Application.License + "\"\n"
-	}
-
-	flags += fileName("linux/amd64") + "=/usr/bin/" + config.Application.Name + "\n"
-
-	_, err = file.WriteString(flags)
-	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to write config file: "+err.Error())
-		return false
-	}
-
 	return true
 }
 
 func clean() {
 	log(1, "Cleaning")
-	os.RemoveAll(PACKAGE_FOLDER)
-	os.RemoveAll(BUILD_FOLDER)
+	os.RemoveAll(PKG_DIR)
+	os.RemoveAll(BIN_DIR)
 }
 
 func buildBinary() {
 	log(2, "Building binaries")
+
+	cmd := exec.Command("go", "get")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		logError(1, "Failed to run get dependecies. "+string(output))
+	}
+
 	os.Mkdir("bin", 0755)
 
 	for i, target := range config.Build.Platforms {
 		logStep(i+1, len(config.Build.Platforms), "Building target "+target)
 
 		splitTarget := strings.Split(target, "/")
-		outputPath := BUILD_FOLDER + "/" + fileName(target)
+		outputPath := BIN_DIR + "/" + fileName(target)
 
 		if splitTarget[0] == "windows" {
 			outputPath += ".exe"
@@ -220,71 +186,6 @@ func buildBinary() {
 	}
 }
 
-func packageDeb() {
-	logStep(packageIndex, packageFormatCount, "Packaging DEB")
-	packageIndex++
-
-	// Check if dpkg-deb is installed
-	cmd := exec.Command("dpkg-deb", "--version")
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		logError(packageIndex-1, "Can't package DEB without dpkg-deb installed.")
-		return
-	}
-
-	// Find packageable binaries
-	platforms := []string{}
-
-	for _, platArch := range config.Build.Platforms {
-		platform, architecture := platformArchitecture(platArch)
-
-		if platform != "linux" {
-			continue
-		}
-
-		if !validDebArch(architecture) {
-			continue
-		}
-
-		platforms = append(platforms, platArch)
-	}
-
-	// Create packages
-	for i, platArch := range platforms {
-		logSubStep(i+1, len(platforms), "Packaging "+platArch+" deb")
-		_, architecture := platformArchitecture(platArch)
-
-		cmd = exec.Command("fpm", "-t", "deb", "--architecture", goArchToDebArch(architecture), fileName(platArch))
-		cmd.Dir = BUILD_FOLDER
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			logError(packageIndex-1, "Failed to package DEB. "+string(output))
-			return
-		}
-	}
-}
-
-func packageRpm() {
-	logStep(packageIndex, packageFormatCount, "Packaging RPM")
-	packageIndex++
-
-	// Check if dpkg-deb is installed
-	cmd := exec.Command("rpm", "--version")
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		logError(packageIndex-1, "Can't package RPM without rpm installed.")
-		return
-	}
-
-	cmd = exec.Command("fpm", "-t", "rpm")
-	cmd.Dir = BUILD_FOLDER
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logError(packageIndex-1, "Failed to package RPM. "+string(output))
-		return
-	}
-}
-
 func createPackages() {
 	log(3, "Packaging")
 
@@ -293,14 +194,12 @@ func createPackages() {
 		return
 	}
 
-	createFPMConfig()
+	os.MkdirAll(PKG_DIR, 0755)
+	os.MkdirAll(PKG_TEMP_DIR, 0755)
 
 	// Package
-	if config.Package.Deb {
-		packageDeb()
-	}
 	if config.Package.Rpm {
-		packageRpm()
+		packageRPM()
 	}
 }
 
@@ -322,6 +221,12 @@ func main() {
 	if action == A_Generate {
 		generateDefault()
 		return
+	}
+
+	cmd := exec.Command("go", "help")
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		fatal("Can't build without go installed.")
 	}
 
 	loadConfig()
