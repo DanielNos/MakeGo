@@ -2,8 +2,6 @@ package main
 
 func goArchToDebArch(architecture string) string {
 	switch architecture {
-	case "arm":
-		return "armhf"
 	case "386":
 		return "i386"
 	default:

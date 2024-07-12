@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	BIN_DIR      = "bin"
-	PKG_DIR      = "pkg"
-	PKG_TEMP_DIR = PKG_DIR + "/.pkg_temp"
+	BIN_DIR     = "bin"
+	PKG_DIR     = "pkg"
+	DEB_PKG_DIR = PKG_DIR + "/.deb"
+	RPM_PKG_DIR = PKG_DIR + "/.rpm"
 )
 
 type Action uint8
@@ -34,7 +35,6 @@ var config Config
 
 var packageFormatCount int = 0
 var packageIndex = 1
-var packagableArchs = []string{}
 
 var stringToAction = map[string]Action{
 	"new":     A_Generate,
@@ -63,16 +63,6 @@ func splitPlatArch(platformArchitecture string) (string, string) {
 	return split[0], split[1]
 }
 
-func isBuildArch(arch string) bool {
-	for _, platArch := range config.Build.Platforms {
-		if strings.Split(platArch, "/")[1] == arch {
-			return true
-		}
-	}
-
-	return false
-}
-
 func countPackageFormats() {
 	if config.DEB.Package {
 		packageFormatCount++
@@ -80,6 +70,15 @@ func countPackageFormats() {
 	if config.RPM.Package {
 		packageFormatCount++
 	}
+}
+
+func isBuildArch(arch string) bool {
+	for _, platArch := range config.Build.Platforms {
+		if strings.Split(platArch, "/")[1] == arch {
+			return true
+		}
+	}
+	return false
 }
 
 func selectActionAndTarget(arguments []string) {
@@ -213,11 +212,10 @@ func createPackages() {
 	}
 
 	os.MkdirAll(PKG_DIR, 0755)
-	os.MkdirAll(PKG_TEMP_DIR, 0755)
 
 	// Package
 	if config.DEB.Package {
-		// TODO: Package DEB
+		packageDEB()
 	}
 
 	if config.RPM.Package {

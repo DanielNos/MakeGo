@@ -9,12 +9,12 @@ import (
 
 func compressSource() error {
 	fileName := config.Application.Name + "-" + config.Application.Version
-	os.MkdirAll(PKG_TEMP_DIR+"/"+fileName, 0755)
+	os.MkdirAll(RPM_PKG_DIR+"/"+fileName, 0755)
 
 	// Copy source files to temp
 	cmd := exec.Command("rsync", "-a",
 		".",
-		PKG_TEMP_DIR+"/"+fileName,
+		RPM_PKG_DIR+"/"+fileName,
 		"--exclude", "bin", "--exclude", "pkg", "--exclude", ".git", "--exclude", ".vscode", "--exclude", "LICENSE",
 	)
 	output, err := cmd.CombinedOutput()
@@ -28,7 +28,7 @@ func compressSource() error {
 		"-czvf", "rpmbuild/SOURCES/"+fileName+".tar.gz",
 		fileName,
 	)
-	cmd.Dir = PKG_TEMP_DIR
+	cmd.Dir = RPM_PKG_DIR
 	output, err = cmd.CombinedOutput()
 
 	if err != nil {
@@ -60,7 +60,7 @@ func checkRPMRequirments() bool {
 func writeSPECFile(platform string) {
 	goos, goarch := splitPlatArch(platform)
 
-	file, err := os.Create(PKG_TEMP_DIR + "/rpmbuild/SPECS/" + config.Application.Name + "-" + goarch + ".spec")
+	file, err := os.Create(RPM_PKG_DIR + "/rpmbuild/SPECS/" + config.Application.Name + "-" + goarch + ".spec")
 	if err != nil {
 		fatal("Failed to create spec file: " + err.Error())
 		return
@@ -105,7 +105,7 @@ func makeRPMPackage(arch string, buildSource bool) error {
 	writeSPECFile("linux/" + arch)
 
 	// Get absolute rpmbuild path
-	absRpmbuild, _ := filepath.Abs("./" + PKG_TEMP_DIR + "/rpmbuild")
+	absRpmbuild, _ := filepath.Abs("./" + RPM_PKG_DIR + "/rpmbuild")
 
 	// Pick build type flag
 	buildFlag := "-bb"
@@ -121,7 +121,7 @@ func makeRPMPackage(arch string, buildSource bool) error {
 		buildFlag, "./rpmbuild/SPECS/"+config.Application.Name+"-"+arch+".spec",
 		"--target", rpmArch,
 	)
-	cmd.Dir, _ = filepath.Abs(PKG_TEMP_DIR)
+	cmd.Dir, _ = filepath.Abs(RPM_PKG_DIR)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -131,13 +131,13 @@ func makeRPMPackage(arch string, buildSource bool) error {
 	// Move package to package directory
 	if buildSource {
 		packageName := config.Application.Name + "-" + config.Application.Version + "-1.src.rpm"
-		err = os.Rename(PKG_TEMP_DIR+"/rpmbuild/SRPMS/"+packageName, PKG_DIR+"/"+packageName)
+		err = os.Rename(RPM_PKG_DIR+"/rpmbuild/SRPMS/"+packageName, PKG_DIR+"/"+packageName)
 		if err != nil {
 			return errors.New("Failed to move package: " + err.Error())
 		}
 	} else {
 		packageName := config.Application.Name + "-" + config.Application.Version + "-1." + rpmArch + ".rpm"
-		err = os.Rename(PKG_TEMP_DIR+"/rpmbuild/RPMS/"+rpmArch+"/"+packageName, PKG_DIR+"/"+packageName)
+		err = os.Rename(RPM_PKG_DIR+"/rpmbuild/RPMS/"+rpmArch+"/"+packageName, PKG_DIR+"/"+packageName)
 		if err != nil {
 			return errors.New("Failed to move package: " + err.Error())
 		}
@@ -156,7 +156,7 @@ func packageRPM() {
 	}
 
 	// Create rpmbuild directories
-	rpmbuild := PKG_TEMP_DIR + "/rpmbuild"
+	rpmbuild := RPM_PKG_DIR + "/rpmbuild"
 	makeDirs([]string{rpmbuild, rpmbuild + "/BUILD", rpmbuild + "/RPMS", rpmbuild + "/SOURCES", rpmbuild + "/SPECS", rpmbuild + "/SRPMS"}, 0755)
 
 	// Compress and prepare source code
