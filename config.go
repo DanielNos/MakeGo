@@ -20,14 +20,21 @@ type MaintainerConfig struct {
 	Email string `toml:"email"`
 }
 
-type PackagesConfig struct {
-	Deb bool `toml:"deb"`
-	Rpm bool `toml:"rpm"`
+type DEBConfig struct {
+	Package       bool     `toml:"package"`
+	Architectures []string `toml:"architectures"`
+}
+
+type RPMConfig struct {
+	Package       bool     `toml:"package"`
+	BuildSource   bool     `toml:"build_src"`
+	Architectures []string `toml:"architectures"`
 }
 
 type Config struct {
 	Application ApplicationConfig `toml:"application"`
 	Build       BuildConfig       `toml:"build"`
 	Maintainer  MaintainerConfig  `toml:"maintainer"`
-	Package     PackagesConfig    `toml:"package"`
+	DEB         DEBConfig         `toml:"deb"`
+	RPM         RPMConfig         `toml:"rpm"`
 }

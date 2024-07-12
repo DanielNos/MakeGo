@@ -29,10 +29,12 @@ const (
 )
 
 var action Action = A_All
-var packageFormatCount int = 0
-var packageIndex = 1
 var configFile string = "make.toml"
 var config Config
+
+var packageFormatCount int = 0
+var packageIndex = 1
+var packagableArchs = []string{}
 
 var stringToAction = map[string]Action{
 	"new":     A_Generate,
@@ -51,21 +53,31 @@ func isInstalled(packageName string) bool {
 	return err == nil
 }
 
-func fileName(platform string) string {
-	splitPlatform := strings.Split(platform, "/")
+func fileName(platArch string) string {
+	splitPlatform := strings.Split(platArch, "/")
 	return config.Application.Name + "_" + config.Application.Version + "_" + splitPlatform[0] + "_" + splitPlatform[1]
 }
 
-func platformArchitecture(platformArchitecture string) (string, string) {
+func splitPlatArch(platformArchitecture string) (string, string) {
 	split := strings.Split(platformArchitecture, "/")
 	return split[0], split[1]
 }
 
+func isBuildArch(arch string) bool {
+	for _, platArch := range config.Build.Platforms {
+		if strings.Split(platArch, "/")[1] == arch {
+			return true
+		}
+	}
+
+	return false
+}
+
 func countPackageFormats() {
-	if config.Package.Deb {
+	if config.DEB.Package {
 		packageFormatCount++
 	}
-	if config.Package.Rpm {
+	if config.RPM.Package {
 		packageFormatCount++
 	}
 }
@@ -118,21 +130,27 @@ func generateDefault() {
 			"name = \"app\"\n" +
 			"version = \"1.0.0\"\n" +
 			"description = \"My cool application.\"\n\n" +
+			"long_description = \"My cool application.\"\n" +
 			"url = \"https://github.com/Username/app\"\n" +
-			"license = \"\"\n" +
+			"license = \"\"\n\n" +
+
+			"[maintainer]\n" +
+			"name = \"Name Surname\"\n" +
+			"email = \"name.surname@email.com\"\n\n" +
 
 			"[build]\n" +
 			"target = \".\"\n" +
 			"flags = \"-ldflags=\\\"-w -s\\\"\"\n" +
 			"platforms = [ \"linux/amd64\", \"windows/amd64\", \"darwin/arm64\" ]\n\n" +
 
-			"[maintainer]\n" +
-			"name = \"Name Surname\"\n" +
-			"email = \"name.surname@email.com\"\n\n" +
+			"[DEB]\n" +
+			"package = false\n" +
+			"architectures = [ amd64 ]\n\n" +
 
-			"[package]\n" +
-			"deb = true\n" +
-			"rpm = true\n",
+			"[RPM]\n" +
+			"package = false\n" +
+			"build_src = true\n" +
+			"architectures = [ amd64 ]\n",
 	)
 	if err != nil {
 		logStepError(1, packageFormatCount, "Failed to write config: "+err.Error())
@@ -198,7 +216,11 @@ func createPackages() {
 	os.MkdirAll(PKG_TEMP_DIR, 0755)
 
 	// Package
-	if config.Package.Rpm {
+	if config.DEB.Package {
+		// TODO: Package DEB
+	}
+
+	if config.RPM.Package {
 		packageRPM()
 	}
 }

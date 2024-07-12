@@ -6,15 +6,20 @@ license = "OSL-3.0"
 description = "A Go build and packaging tool."
 long_description = "A Go build and packaging tool."
 
-[build]
-target = "."
-flags = "-ldflags=\"-w -s\""
-platforms = [ "linux/amd64" ]
-
 [maintainer]
 name = "Daniel Nos"
 email = "nos.daniel@pm.me"
 
-[package]
-deb = true
-rpm = true
+[build]
+target = "."
+flags = "-ldflags=\"-w -s\""
+platforms = [ "linux/amd64", "linux/386",  "linux/arm64" ]
+
+[deb]
+package = true
+architectures = [ "amd64", "386", "arm", "arm64" ]
+
+[rpm]
+package = true
+build_src = true
+architectures = [ "amd64", "386", "arm", "arm64" ]

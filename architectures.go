@@ -1,15 +1,26 @@
 package main
 
-func validDebArch(architecture string) bool {
-	return architecture == "amd64" || architecture == "arm64" || architecture == "arm" || architecture == "386"
-}
-
 func goArchToDebArch(architecture string) string {
 	switch architecture {
 	case "arm":
 		return "armhf"
 	case "386":
 		return "i386"
+	default:
+		return architecture
+	}
+}
+
+func goArchToRpmArch(architecture string) string {
+	switch architecture {
+	case "amd64":
+		return "x86_64"
+	case "386":
+		return "i386"
+	case "arm":
+		return "armhf"
+	case "arm64":
+		return "aarch64"
 	default:
 		return architecture
 	}

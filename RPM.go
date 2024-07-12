@@ -57,7 +57,7 @@ func checkRPMRequirments() bool {
 	return true
 }
 
-func writeSPECFile(architecture string) {
+func writeSPECFile(platform string) {
 	file, err := os.Create(PKG_TEMP_DIR + "/rpmbuild/SPECS/" + config.Application.Name + ".spec")
 	if err != nil {
 		fatal("Failed to create spec file: " + err.Error())
@@ -65,7 +65,9 @@ func writeSPECFile(architecture string) {
 	}
 	defer file.Close()
 
+	goos, goarch := splitPlatArch(platform)
 	fileName := config.Application.Name + "-" + config.Application.Version
+
 	writeLine(file, "%global _find_debuginfo_opts %{nil}\n%define debug_package %{nil}\n")
 
 	writeLine(file, "Name: "+config.Application.Name)
@@ -87,7 +89,7 @@ func writeSPECFile(architecture string) {
 
 	writeLine(file, "%build")
 	writeLine(file, "go get")
-	writeLine(file, "go build -o "+fileName+" .\n")
+	writeLine(file, "GOOS="+goos+" GOARCH="+goarch+" go build -o "+fileName+" .\n")
 
 	writeLine(file, "%install")
 	writeLine(file, "mkdir -p %{buildroot}/usr/bin/")
@@ -95,6 +97,52 @@ func writeSPECFile(architecture string) {
 
 	writeLine(file, "%files")
 	writeLine(file, "/usr/bin/"+config.Application.Name+"\n")
+}
+
+func makeRPMPackage(arch string, buildSource bool) error {
+	// Create SPEC file
+	writeSPECFile("linux/" + arch)
+
+	// Get absolute rpmbuild path
+	absRpmbuild, _ := filepath.Abs("./" + PKG_TEMP_DIR + "/rpmbuild")
+
+	// Pick build type flag
+	buildFlag := "-bb"
+	if buildSource {
+		buildFlag = "-bs"
+	}
+
+	// Run rpmbuild
+	rpmArch := goArchToRpmArch(arch)
+
+	cmd := exec.Command("rpmbuild",
+		"--define", "_topdir "+absRpmbuild,
+		buildFlag, "./rpmbuild/SPECS/"+config.Application.Name+".spec",
+		"--target", rpmArch,
+	)
+	cmd.Dir, _ = filepath.Abs(PKG_TEMP_DIR)
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return errors.New("Failed to package: " + string(output))
+	}
+
+	// Move package to package directory
+	if buildSource {
+		packageName := config.Application.Name + "-" + config.Application.Version + "-1.src.rpm"
+		err = os.Rename(PKG_TEMP_DIR+"/rpmbuild/SRPMS/"+packageName, PKG_DIR+"/"+packageName)
+		if err != nil {
+			return errors.New("Failed to move package: " + err.Error())
+		}
+	} else {
+		packageName := config.Application.Name + "-" + config.Application.Version + "-1." + rpmArch + ".rpm"
+		err = os.Rename(PKG_TEMP_DIR+"/rpmbuild/RPMS/"+rpmArch+"/"+packageName, PKG_DIR+"/"+packageName)
+		if err != nil {
+			return errors.New("Failed to move package: " + err.Error())
+		}
+	}
+
+	return nil
 }
 
 func packageRPM() {
@@ -117,34 +165,28 @@ func packageRPM() {
 		return
 	}
 
-	// Create SPEC file
-	writeSPECFile("linux/amd64")
-	absRpmbuild, _ := filepath.Abs("./" + rpmbuild)
-
-	// Package
-	cmd := exec.Command("rpmbuild",
-		"--without", "debuginfo",
-		"--define", "_topdir "+absRpmbuild,
-		"-ba", "./rpmbuild/SPECS/"+config.Application.Name+".spec",
-	)
-	cmd.Dir, _ = filepath.Abs(PKG_TEMP_DIR)
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logError(packageIndex-1, "Failed to package: "+string(output))
+	// Create packages
+	targetcount := len(config.RPM.Architectures)
+	if config.RPM.BuildSource {
+		targetcount++
 	}
 
-	// Move packages
-	packageName := config.Application.Name + "-" + config.Application.Version + "-1.x86_64.rpm"
-	err = os.Rename(PKG_TEMP_DIR+"/rpmbuild/RPMS/x86_64/"+packageName, PKG_DIR+"/"+packageName)
-	if err != nil {
-		println("ERROR: " + err.Error())
+	for i, arch := range config.RPM.Architectures {
+		logSubStep(i+1, targetcount, "Packaging arch "+arch)
+		err := makeRPMPackage(arch, false)
+
+		if err != nil {
+			logSubStepError(i+1, targetcount, err.Error())
+		}
 	}
 
-	sourcePackageName := config.Application.Name + "-" + config.Application.Version + "-1.src.rpm"
-	err = os.Rename(PKG_TEMP_DIR+"/rpmbuild/SRPMS/"+sourcePackageName, PKG_DIR+"/"+sourcePackageName)
-	if err != nil {
-		println("ERROR: " + err.Error())
-	}
+	// Create source package
+	if config.RPM.BuildSource {
+		logSubStep(targetcount, targetcount, "Packaging src")
+		makeRPMPackage("amd64", true)
 
+		if err != nil {
+			logSubStepError(targetcount, targetcount, err.Error())
+		}
+	}
 }
