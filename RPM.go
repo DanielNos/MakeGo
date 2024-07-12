@@ -58,14 +58,15 @@ func checkRPMRequirments() bool {
 }
 
 func writeSPECFile(platform string) {
-	file, err := os.Create(PKG_TEMP_DIR + "/rpmbuild/SPECS/" + config.Application.Name + ".spec")
+	goos, goarch := splitPlatArch(platform)
+
+	file, err := os.Create(PKG_TEMP_DIR + "/rpmbuild/SPECS/" + config.Application.Name + "-" + goarch + ".spec")
 	if err != nil {
 		fatal("Failed to create spec file: " + err.Error())
 		return
 	}
 	defer file.Close()
 
-	goos, goarch := splitPlatArch(platform)
 	fileName := config.Application.Name + "-" + config.Application.Version
 
 	writeLine(file, "%global _find_debuginfo_opts %{nil}\n%define debug_package %{nil}\n")
@@ -117,7 +118,7 @@ func makeRPMPackage(arch string, buildSource bool) error {
 
 	cmd := exec.Command("rpmbuild",
 		"--define", "_topdir "+absRpmbuild,
-		buildFlag, "./rpmbuild/SPECS/"+config.Application.Name+".spec",
+		buildFlag, "./rpmbuild/SPECS/"+config.Application.Name+"-"+arch+".spec",
 		"--target", rpmArch,
 	)
 	cmd.Dir, _ = filepath.Abs(PKG_TEMP_DIR)

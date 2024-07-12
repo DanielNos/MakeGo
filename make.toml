@@ -13,7 +13,7 @@ email = "nos.daniel@pm.me"
 [build]
 target = "."
 flags = "-ldflags=\"-w -s\""
-platforms = [ "linux/amd64", "linux/386",  "linux/arm64" ]
+platforms = [ "linux/amd64", "linux/386", "linux/arm", "linux/arm64" ]
 
 [deb]
 package = true
