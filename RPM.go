@@ -184,7 +184,7 @@ func packageRPM() {
 	// Create source package
 	if config.RPM.BuildSource {
 		logSubStep(targetcount, targetcount, "Packaging src")
-		makeRPMPackage("amd64", true)
+		err := makeRPMPackage("amd64", true)
 
 		if err != nil {
 			logSubStepError(targetcount, targetcount, err.Error())
