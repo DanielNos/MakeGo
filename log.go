@@ -24,10 +24,10 @@ const (
 
 var stepColors = []string{C_CYAN_B, C_CYAN, C_BLUE_B}
 
-var logTimeStamp = false
+var logTimeStamps = false
 
 func timeStamp(timeStamp time.Time) {
-	if logTimeStamp {
+	if logTimeStamps {
 		fmt.Print(C_WHITE + timeStamp.Format(TIME_FORMAT) + " ")
 	}
 }

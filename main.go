@@ -98,6 +98,7 @@ func printHelp() {
 	fmt.Println("Flags:")
 	fmt.Println("      -h --help     Show help.")
 	fmt.Println("      -v --version  Show version.")
+	fmt.Println("      -t --time     Print time stamps.")
 }
 
 func parseArgs() {
@@ -125,6 +126,9 @@ func parseArgs() {
 		case "-v", "--version":
 			fmt.Println("MakeGo " + VERSION)
 			os.Exit(0)
+
+		case "-t", "--time":
+			logTimeStamps = true
 
 		default:
 			if strings.HasSuffix(arg, ".toml") {
