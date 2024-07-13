@@ -40,17 +40,17 @@ func compressSource() error {
 
 func checkRPMRequirments() bool {
 	if !isInstalled("rpm") {
-		logError(packageIndex-1, "Can't package RPM without rpm installed.")
+		stepError("Can't package RPM without rpm installed.", packageIndex-1, 2, 1)
 		return false
 	}
 
 	if !isInstalled("tar") {
-		logError(packageIndex-1, "Can't package RPM without tar installed.")
+		stepError("Can't package RPM without tar installed.", packageIndex-1, 2, 1)
 		return false
 	}
 
 	if !isInstalled("rsync") {
-		logError(packageIndex-1, "Can't package RPM without rsync installed.")
+		stepError("Can't package RPM without rsync installed.", packageIndex-1, 2, 1)
 		return false
 	}
 
@@ -147,7 +147,7 @@ func makeRPMPackage(arch string, buildSource bool) error {
 }
 
 func packageRPM() {
-	logStep(packageIndex, packageFormatCount, "Packaging RPM")
+	step("Packaging RPM", packageIndex, packageFormatCount, 1)
 	packageIndex++
 
 	// Check requirments
@@ -162,7 +162,7 @@ func packageRPM() {
 	// Compress and prepare source code
 	err := compressSource()
 	if err != nil {
-		logError(packageIndex-1, err.Error())
+		stepError(err.Error(), packageIndex-1, packageFormatCount, 2)
 		return
 	}
 
@@ -173,21 +173,21 @@ func packageRPM() {
 	}
 
 	for i, arch := range config.RPM.Architectures {
-		logSubStep(i+1, targetcount, "Packaging arch "+arch)
+		step("Packaging arch "+arch, i+1, targetcount, 2)
 		err := makeRPMPackage(arch, false)
 
 		if err != nil {
-			logSubStepError(i+1, targetcount, err.Error())
+			stepError(err.Error(), i+1, targetcount, 2)
 		}
 	}
 
 	// Create source package
 	if config.RPM.BuildSource {
-		logSubStep(targetcount, targetcount, "Packaging src")
+		step("Packaging src", targetcount, targetcount, 2)
 		err := makeRPMPackage("amd64", true)
 
 		if err != nil {
-			logSubStepError(targetcount, targetcount, err.Error())
+			stepError(err.Error(), targetcount, targetcount, 2)
 		}
 	}
 }

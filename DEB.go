@@ -8,7 +8,7 @@ import (
 
 func checkDEBRequirements() bool {
 	if !isInstalled("dpkg-deb") {
-		logError(packageIndex-1, "Can't package DEB without dpkg-deb installed.")
+		stepError("Can't package DEB without dpkg-deb installed.", packageIndex-1, packageFormatCount, 1)
 		return false
 	}
 
@@ -76,7 +76,7 @@ func makeDEBPackage(arch string) error {
 }
 
 func packageDEB() {
-	logStep(packageIndex, packageFormatCount, "Packaging DEB")
+	step("Packaging DEB", packageIndex, packageFormatCount, 1)
 	packageIndex++
 
 	// Check requirments
@@ -90,17 +90,17 @@ func packageDEB() {
 
 	// Create packages
 	for i, arch := range config.DEB.Architectures {
-		logSubStep(i+1, len(config.DEB.Architectures), "Packaging arch "+arch)
+		step("Packaging arch "+arch, i+1, len(config.DEB.Architectures), 2)
 
 		if !isBuildArch(arch) {
-			logSubStepError(i+1, len(config.DEB.Architectures), "Can't package arch "+arch+": binary wasn't built. Add linux/"+arch+" to [build]-platforms.")
+			stepError("Can't package arch "+arch+": binary wasn't built. Add linux/"+arch+" to [build]-platforms.", i+1, len(config.DEB.Architectures), 1)
 			continue
 		}
 
 		err := makeDEBPackage(arch)
 
 		if err != nil {
-			logSubStepError(i+1, len(config.DEB.Architectures), err.Error())
+			stepError(err.Error(), i+1, len(config.DEB.Architectures), 2)
 		}
 	}
 }

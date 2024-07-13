@@ -152,38 +152,38 @@ func generateDefault() {
 			"architectures = [ amd64 ]\n",
 	)
 	if err != nil {
-		logStepError(1, packageFormatCount, "Failed to write config: "+err.Error())
+		stepError("Failed to write config: "+err.Error(), 1, packageFormatCount, 0)
 		return
 	}
 }
 
 func checkRequirments() bool {
 	if runtime.GOOS != "linux" {
-		logError(3, "Can't package on non-linux system.")
+		stepError("Can't package on non-linux system.", 3, 3, 0)
 		return false
 	}
 	return true
 }
 
 func clean() {
-	log(1, "Cleaning")
+	step("Cleaning", 1, 3, 0)
 	os.RemoveAll(PKG_DIR)
 	os.RemoveAll(BIN_DIR)
 }
 
 func buildBinary() {
-	log(2, "Building binaries")
+	step("Building binaries", 2, 3, 0)
 
 	cmd := exec.Command("go", "get")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		logError(1, "Failed to run get dependecies. "+string(output))
+		stepError("Failed to run get dependecies. "+string(output), 1, 3, 0)
 	}
 
 	os.Mkdir("bin", 0755)
 
 	for i, target := range config.Build.Platforms {
-		logStep(i+1, len(config.Build.Platforms), "Building target "+target)
+		step("Building target "+target, i+1, len(config.Build.Platforms), 1)
 
 		splitTarget := strings.Split(target, "/")
 		outputPath := BIN_DIR + "/" + fileName(target)
@@ -198,13 +198,13 @@ func buildBinary() {
 		output, err := cmd.CombinedOutput()
 
 		if err != nil {
-			logStepError(i+1, len(config.Build.Platforms), string(output))
+			stepError(string(output), i+1, len(config.Build.Platforms), 1)
 		}
 	}
 }
 
 func createPackages() {
-	log(3, "Packaging")
+	step("Packaging", 3, 3, 0)
 
 	meetsRequirements := checkRequirments()
 	if !meetsRequirements {
