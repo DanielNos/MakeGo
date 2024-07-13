@@ -81,7 +81,7 @@ func writeSPECFile(platform string) {
 	writeLine(file, "Source0: "+fileName+".tar.gz\n")
 
 	writeLine(file, "BuildRequires: golang")
-	writeLine(file, "Requires: libc6\n")
+	writeLine(file, "Requires: glibc\n")
 
 	writeLine(file, "%description")
 	writeLine(file, config.Application.LongDescription+"\n")
