@@ -11,6 +11,8 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+const VERSION = "0.1.0"
+
 const (
 	BIN_DIR     = "bin"
 	PKG_DIR     = "pkg"
@@ -29,12 +31,14 @@ const (
 	A_All
 )
 
-var action Action = A_All
-var configFile string = "make.toml"
+var action Action
+var configFile string
 var config Config
 
 var packageFormatCount int = 0
 var packageIndex = 1
+
+var generateTarget string
 
 var stringToAction = map[string]Action{
 	"new":     A_Generate,
@@ -106,6 +110,80 @@ func selectActionAndTarget(arguments []string) {
 	}
 }
 
+func printHelp() {
+	fmt.Println("MakeGo\n")
+	fmt.Println("Usage: makego [action] [config]\n")
+	fmt.Println("Actions:")
+	fmt.Println("      help           Shows help.")
+	fmt.Println("      new [template] Creates a config template. Templates: default (or none), all.")
+	fmt.Println("      cln/clean      Removes all build and package files.")
+	fmt.Println("      bin/binary     Builds binaries.")
+	fmt.Println("      pkg/package    Builds binaries and packages them.")
+	fmt.Println("      all (or none)  Does cln -> bin -> pkg.\n")
+	fmt.Println("Flags:")
+	fmt.Println("      -h --help     Show help.")
+	fmt.Println("      -v --version  Show version.")
+
+}
+
+func parseArgs() {
+	action = A_None
+	configFile = ""
+
+	for i, arg := range os.Args[1:] {
+		if generateTarget == "*" {
+			if strings.HasSuffix(arg, ".toml") {
+				if configFile != "" {
+					fatal(fmt.Sprintf("argument %d: more than 1 config file specified.", i+1))
+				}
+				configFile = arg
+			} else {
+				generateTarget = arg
+			}
+			continue
+		}
+
+		switch arg {
+		case "-h", "--help", "help":
+			printHelp()
+			os.Exit(0)
+
+		case "-v", "--version":
+			fmt.Println("MakeGo " + VERSION)
+			os.Exit(0)
+
+		default:
+			if strings.HasSuffix(arg, ".toml") {
+				if configFile != "" {
+					fatal(fmt.Sprintf("argument %d: more than 1 config file specified.", i+1))
+				}
+				configFile = arg
+			} else {
+				maybeAction := stringToAction[arg]
+				if maybeAction == A_None {
+					configFile = arg
+				} else {
+					if maybeAction == A_Generate {
+						generateTarget = "*"
+					}
+
+					action = maybeAction
+				}
+			}
+		}
+	}
+
+	if action == A_None {
+		action = A_All
+	}
+	if configFile == "" {
+		configFile = "make.toml"
+	}
+	if generateTarget == "*" {
+		generateTarget = "normal"
+	}
+}
+
 func loadConfig() {
 	_, err := toml.DecodeFile(configFile, &config)
 
@@ -117,6 +195,15 @@ func loadConfig() {
 }
 
 func generateDefault() {
+	configText := CONFIG_DEFAULT
+	if generateTarget == "all" {
+		configText = CONFIG_ALL
+	} else {
+		generateTarget = "default"
+	}
+
+	info(time.Now(), "Generating config template "+generateTarget+" to "+configFile+".")
+
 	file, err := os.Create(configFile)
 	if err != nil {
 		fatal("Failed to create config: " + err.Error())
@@ -124,33 +211,7 @@ func generateDefault() {
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(
-		"[application]\n" +
-			"name = \"app\"\n" +
-			"version = \"1.0.0\"\n" +
-			"description = \"My cool application.\"\n\n" +
-			"long_description = \"My cool application.\"\n" +
-			"url = \"https://github.com/Username/app\"\n" +
-			"license = \"\"\n\n" +
-
-			"[maintainer]\n" +
-			"name = \"Name Surname\"\n" +
-			"email = \"name.surname@email.com\"\n\n" +
-
-			"[build]\n" +
-			"target = \".\"\n" +
-			"flags = \"-ldflags=\\\"-w -s\\\"\"\n" +
-			"platforms = [ \"linux/amd64\", \"windows/amd64\", \"darwin/arm64\" ]\n\n" +
-
-			"[DEB]\n" +
-			"package = false\n" +
-			"architectures = [ amd64 ]\n\n" +
-
-			"[RPM]\n" +
-			"package = false\n" +
-			"build_src = true\n" +
-			"architectures = [ amd64 ]\n",
-	)
+	_, err = file.WriteString(configText)
 	if err != nil {
 		stepError("Failed to write config: "+err.Error(), 1, packageFormatCount, 0)
 		return
@@ -236,7 +297,7 @@ func make() {
 }
 
 func main() {
-	selectActionAndTarget(os.Args[1:])
+	parseArgs()
 
 	if action == A_Generate {
 		generateDefault()
