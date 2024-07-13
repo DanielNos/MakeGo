@@ -85,31 +85,6 @@ func isBuildArch(arch string) bool {
 	return false
 }
 
-func selectActionAndTarget(arguments []string) {
-	if len(arguments) == 0 {
-		return
-	}
-
-	actionString := arguments[0]
-
-	if len(arguments) > 1 {
-		configFile = arguments[0]
-		actionString = arguments[1]
-	}
-
-	action = stringToAction[actionString]
-
-	if action == A_None {
-		action = A_All
-		if strings.HasSuffix(actionString, ".toml") {
-			configFile = actionString
-			return
-		}
-
-		fatal("Unknown action " + actionString + ".")
-	}
-}
-
 func printHelp() {
 	fmt.Println("MakeGo\n")
 	fmt.Println("Usage: makego [action] [config]\n")
@@ -123,7 +98,6 @@ func printHelp() {
 	fmt.Println("Flags:")
 	fmt.Println("      -h --help     Show help.")
 	fmt.Println("      -v --version  Show version.")
-
 }
 
 func parseArgs() {
