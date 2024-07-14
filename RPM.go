@@ -132,15 +132,13 @@ func makeRPMPackage(arch string, buildSource bool) error {
 	if buildSource {
 		packageName := config.Application.Name + "-" + config.Application.Version + "-1.src.rpm"
 		err = os.Rename(RPM_PKG_DIR+"/rpmbuild/SRPMS/"+packageName, PKG_DIR+"/"+packageName)
-		if err != nil {
-			return errors.New("Failed to move package: " + err.Error())
-		}
 	} else {
 		packageName := config.Application.Name + "-" + config.Application.Version + "-1." + rpmArch + ".rpm"
 		err = os.Rename(RPM_PKG_DIR+"/rpmbuild/RPMS/"+rpmArch+"/"+packageName, PKG_DIR+"/"+packageName)
-		if err != nil {
-			return errors.New("Failed to move package: " + err.Error())
-		}
+	}
+
+	if err != nil {
+		return errors.New("Failed to move package: " + err.Error())
 	}
 
 	return nil
