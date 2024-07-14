@@ -11,7 +11,6 @@ func checkDebRequirements() bool {
 		stepError("Can't package deb without dpkg-Deb installed.", packageIndex-1, packageFormatCount, 1)
 		return false
 	}
-
 	return true
 }
 
