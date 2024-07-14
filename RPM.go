@@ -7,37 +7,6 @@ import (
 	"path/filepath"
 )
 
-func compressSource() error {
-	fileName := config.Application.Name + "-" + config.Application.Version
-	os.MkdirAll(RPM_PKG_DIR+"/"+fileName, 0755)
-
-	// Copy source files to temp
-	cmd := exec.Command("rsync", "-a",
-		".",
-		RPM_PKG_DIR+"/"+fileName,
-		"--exclude", "bin", "--exclude", "pkg", "--exclude", ".git", "--exclude", ".vscode", "--exclude", "LICENSE",
-	)
-	output, err := cmd.CombinedOutput()
-
-	if err != nil {
-		return errors.New("Failed to copy source: " + string(output))
-	}
-
-	// Compress source files
-	cmd = exec.Command("tar",
-		"-czvf", "rpmbuild/SOURCES/"+fileName+".tar.gz",
-		fileName,
-	)
-	cmd.Dir = RPM_PKG_DIR
-	output, err = cmd.CombinedOutput()
-
-	if err != nil {
-		return errors.New("Failed to compress source: " + string(output))
-	}
-
-	return nil
-}
-
 func checkRPMRequirments() bool {
 	if !isInstalled("rpm") {
 		stepError("Can't package RPM without rpm installed.", packageIndex-1, 2, 1)
@@ -157,35 +126,39 @@ func packageRPM() {
 	rpmbuild := RPM_PKG_DIR + "/rpmbuild"
 	makeDirs([]string{rpmbuild, rpmbuild + "/BUILD", rpmbuild + "/RPMS", rpmbuild + "/SOURCES", rpmbuild + "/SPECS", rpmbuild + "/SRPMS"}, 0755)
 
-	// Compress and prepare source code
-	err := compressSource()
+	// Create packages
+	cmd := exec.Command("cp",
+		SRC_PKG_DIR+"/"+config.Application.Name+"-"+config.Application.Version+".tar.gz",
+		RPM_PKG_DIR+"/rpmbuild/SOURCES/",
+	)
+
+	output, err := cmd.CombinedOutput()
 	if err != nil {
-		stepError(err.Error(), packageIndex-1, packageFormatCount, 2)
+		stepError("Failed to package: "+string(output), packageIndex-1, packageFormatCount, 1)
 		return
 	}
 
-	// Create packages
-	targetcount := len(config.RPM.Architectures)
+	targetCount := len(config.RPM.Architectures)
 	if config.RPM.BuildSource {
-		targetcount++
+		targetCount++
 	}
 
 	for i, arch := range config.RPM.Architectures {
-		step("Packaging "+arch, i+1, targetcount, 2, true)
+		step("Packaging "+arch, i+1, targetCount, 2, true)
 		err := makeRPMPackage(arch, false)
 
 		if err != nil {
-			stepError(err.Error(), i+1, targetcount, 2)
+			stepError(err.Error(), i+1, targetCount, 2)
 		}
 	}
 
 	// Create source package
 	if config.RPM.BuildSource {
-		step("Packaging source", targetcount, targetcount, 2, true)
+		step("Packaging source", targetCount, targetCount, 2, true)
 		err := makeRPMPackage("amd64", true)
 
 		if err != nil {
-			stepError(err.Error(), targetcount, targetcount, 2)
+			stepError(err.Error(), targetCount, targetCount, 2)
 		}
 	}
 }

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -14,10 +16,12 @@ import (
 const VERSION = "0.1.0"
 
 const (
-	BIN_DIR     = "bin"
-	PKG_DIR     = "pkg"
-	DEB_PKG_DIR = PKG_DIR + "/.Deb"
-	RPM_PKG_DIR = PKG_DIR + "/.rpm"
+	BIN_DIR      = "bin"
+	PKG_DIR      = "pkg"
+	SRC_PKG_DIR  = PKG_DIR + "/.src"
+	DEB_PKG_DIR  = PKG_DIR + "/.deb"
+	RPM_PKG_DIR  = PKG_DIR + "/.rpm"
+	ARCH_PKG_DIR = PKG_DIR + "/.arch"
 )
 
 type Action uint8
@@ -83,6 +87,38 @@ func isBuildArch(arch string) bool {
 		}
 	}
 	return false
+}
+
+func cs() error {
+	sourcePath := SRC_PKG_DIR + "/" + config.Application.Name + "-" + config.Application.Version
+	sourcePath, _ = filepath.Abs(sourcePath)
+	os.MkdirAll(sourcePath, 0755)
+
+	// Copy source files to temp
+	cmd := exec.Command("rsync", "-a",
+		".",
+		sourcePath,
+		"--exclude", "bin", "--exclude", "pkg", "--exclude", ".git", "--exclude", ".vscode", "--exclude", "LICENSE",
+	)
+	output, err := cmd.CombinedOutput()
+
+	if err != nil {
+		return errors.New("Failed to copy source: " + string(output))
+	}
+
+	// Compress source files
+	cmd = exec.Command("tar",
+		"-czf", sourcePath+".tar.gz",
+		config.Application.Name+"-"+config.Application.Version,
+	)
+	cmd.Dir = SRC_PKG_DIR
+	output, err = cmd.CombinedOutput()
+
+	if err != nil {
+		return errors.New("Failed to compress source: " + string(output))
+	}
+
+	return nil
 }
 
 func printHelp() {
@@ -247,14 +283,20 @@ func buildBinaries() {
 func createPackages() {
 	step("Packaging", 3, int(action)-1, 0, false)
 
+	// Check requirements
 	meetsRequirements := checkRequirements()
 	if !meetsRequirements {
 		return
 	}
 
-	os.MkdirAll(PKG_DIR, 0755)
+	// Compress source
+	if config.RPM.BuildSource {
+		cs()
+	}
 
 	// Package
+	os.MkdirAll(PKG_DIR, 0755)
+
 	if config.Deb.Package {
 		packageDeb()
 	}
@@ -264,7 +306,7 @@ func createPackages() {
 	}
 }
 
-func make() {
+func build() {
 	clean()
 
 	if action >= A_Binary {
@@ -295,7 +337,9 @@ func main() {
 	start := time.Now()
 	info(start, "Building \""+config.Build.Target+"\"")
 
-	make()
+	clean()
+
+	build()
 
 	success(fmt.Sprintf("Build complete in %s", time.Since(start)))
 }
