@@ -90,7 +90,7 @@ func printHelp() {
 	fmt.Println("Usage: makego [action] [config]\n")
 	fmt.Println("Actions:")
 	fmt.Println("      help           Shows help.")
-	fmt.Println("      new [template] Creates a config template. Templates: default (or none), all.")
+	fmt.Println("      new [template] Creates a config template. Templates: default (or none), all, empty.")
 	fmt.Println("      cln/clean      Removes all build and package files.")
 	fmt.Println("      bin/binary     Builds binaries.")
 	fmt.Println("      pkg/package    Builds binaries and packages them.")
@@ -176,6 +176,8 @@ func writeDefaultConfig() {
 	configText := CONFIG_DEFAULT
 	if generateTarget == "all" {
 		configText = CONFIG_ALL
+	} else if generateTarget == "empty" {
+		configText = CONFIG_EMPTY
 	} else {
 		generateTarget = "default"
 	}

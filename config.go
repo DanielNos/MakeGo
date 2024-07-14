@@ -39,10 +39,36 @@ type Config struct {
 	RPM         RPMConfig         `toml:"rpm"`
 }
 
+const CONFIG_EMPTY = "[application]\n" +
+	"name = \"\"\n" +
+	"version = \"\"\n" +
+	"description = \"\"\n" +
+	"long_description = \"\"\n" +
+	"url = \"\"\n" +
+	"license = \"\"\n\n" +
+
+	"[maintainer]\n" +
+	"name = \"\"\n" +
+	"email = \"\"\n\n" +
+
+	"[build]\n" +
+	"target = \".\"\n" +
+	"flags = \"\"\n" +
+	"platforms = [ ]\n\n" +
+
+	"[deb]\n" +
+	"package = false\n" +
+	"architectures = [ ]\n\n" +
+
+	"[rpm]\n" +
+	"package = false\n" +
+	"build_src = false\n" +
+	"architectures = [ ]\n"
+
 const CONFIG_DEFAULT = "[application]\n" +
 	"name = \"app\"\n" +
 	"version = \"1.0.0\"\n" +
-	"description = \"My cool application.\"\n\n" +
+	"description = \"My cool application.\"\n" +
 	"long_description = \"My cool application.\"\n" +
 	"url = \"https://github.com/Username/app\"\n" +
 	"license = \"\"\n\n" +
@@ -68,7 +94,7 @@ const CONFIG_DEFAULT = "[application]\n" +
 const CONFIG_ALL = "[application]\n" +
 	"name = \"app\"\n" +
 	"version = \"1.0.0\"\n" +
-	"description = \"My cool application.\"\n\n" +
+	"description = \"My cool application.\"\n" +
 	"long_description = \"My cool application.\"\n" +
 	"url = \"https://github.com/Username/app\"\n" +
 	"license = \"\"\n\n" +
