@@ -20,7 +20,7 @@ type MaintainerConfig struct {
 	Email string `toml:"email"`
 }
 
-type DEBConfig struct {
+type DebConfig struct {
 	Package       bool     `toml:"package"`
 	Architectures []string `toml:"architectures"`
 }
@@ -35,7 +35,7 @@ type Config struct {
 	Application ApplicationConfig `toml:"application"`
 	Build       BuildConfig       `toml:"build"`
 	Maintainer  MaintainerConfig  `toml:"maintainer"`
-	DEB         DEBConfig         `toml:"deb"`
+	Deb         DebConfig         `toml:"deb"`
 	RPM         RPMConfig         `toml:"rpm"`
 }
 
@@ -56,11 +56,11 @@ const CONFIG_DEFAULT = "[application]\n" +
 	"flags = \"-ldflags=\\\"-w -s\\\"\"\n" +
 	"platforms = [ \"linux/amd64\", \"windows/amd64\", \"darwin/arm64\" ]\n\n" +
 
-	"[DEB]\n" +
+	"[deb]\n" +
 	"package = false\n" +
 	"architectures = [ \"amd64\" ]\n\n" +
 
-	"[RPM]\n" +
+	"[rpm]\n" +
 	"package = false\n" +
 	"build_src = true\n" +
 	"architectures = [ \"amd64\" ]\n"
@@ -84,11 +84,11 @@ const CONFIG_ALL = "[application]\n" +
 	"\"windows/amd64\", \"windows/386\", \"windows/arm\", \"windows/arm64\",\n" +
 	"\"darwin/amd64\", \"darwin/arm64\" ]\n\n" +
 
-	"[DEB]\n" +
+	"[deb]\n" +
 	"package = true\n" +
 	"architectures = [ \"amd64\", \"386\", \"arm\", \"arm64\" ]\n\n" +
 
-	"[RPM]\n" +
+	"[rpm]\n" +
 	"package = true\n" +
 	"build_src = true\n" +
 	"architectures = [ \"amd64\", \"386\", \"arm\", \"arm64\" ]\n"

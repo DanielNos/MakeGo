@@ -16,7 +16,7 @@ const VERSION = "0.1.0"
 const (
 	BIN_DIR     = "bin"
 	PKG_DIR     = "pkg"
-	DEB_PKG_DIR = PKG_DIR + "/.deb"
+	DEB_PKG_DIR = PKG_DIR + "/.Deb"
 	RPM_PKG_DIR = PKG_DIR + "/.rpm"
 )
 
@@ -68,7 +68,7 @@ func splitPlatArch(platformArchitecture string) (string, string) {
 }
 
 func countPackageFormats() {
-	if config.DEB.Package {
+	if config.Deb.Package {
 		packageFormatCount++
 	}
 	if config.RPM.Package {
@@ -101,7 +101,7 @@ func printHelp() {
 	fmt.Println("      -t --time     Print time stamps.")
 }
 
-func parseArgs() {
+func parseArguments() {
 	action = A_None
 	configFile = ""
 
@@ -172,7 +172,7 @@ func loadConfig() {
 	countPackageFormats()
 }
 
-func generateDefault() {
+func writeDefaultConfig() {
 	configText := CONFIG_DEFAULT
 	if generateTarget == "all" {
 		configText = CONFIG_ALL
@@ -196,7 +196,7 @@ func generateDefault() {
 	}
 }
 
-func checkRequirments() bool {
+func checkRequirements() bool {
 	if runtime.GOOS != "linux" {
 		stepError("Can't package on non-linux system.", 3, 3, 0)
 		return false
@@ -210,7 +210,7 @@ func clean() {
 	os.RemoveAll(BIN_DIR)
 }
 
-func buildBinary() {
+func buildBinaries() {
 	step("Building binaries", 2, 3, 0, false)
 
 	cmd := exec.Command("go", "get")
@@ -245,7 +245,7 @@ func buildBinary() {
 func createPackages() {
 	step("Packaging", 3, 3, 0, false)
 
-	meetsRequirements := checkRequirments()
+	meetsRequirements := checkRequirements()
 	if !meetsRequirements {
 		return
 	}
@@ -253,8 +253,8 @@ func createPackages() {
 	os.MkdirAll(PKG_DIR, 0755)
 
 	// Package
-	if config.DEB.Package {
-		packageDEB()
+	if config.Deb.Package {
+		packageDeb()
 	}
 
 	if config.RPM.Package {
@@ -266,7 +266,7 @@ func make() {
 	clean()
 
 	if action >= A_Binary {
-		buildBinary()
+		buildBinaries()
 	}
 
 	if action >= A_Package {
@@ -275,10 +275,10 @@ func make() {
 }
 
 func main() {
-	parseArgs()
+	parseArguments()
 
 	if action == A_Generate {
-		generateDefault()
+		writeDefaultConfig()
 		return
 	}
 

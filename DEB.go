@@ -6,9 +6,9 @@ import (
 	"os/exec"
 )
 
-func checkDEBRequirements() bool {
+func checkDebRequirements() bool {
 	if !isInstalled("dpkg-deb") {
-		stepError("Can't package DEB without dpkg-deb installed.", packageIndex-1, packageFormatCount, 1)
+		stepError("Can't package deb without dpkg-Deb installed.", packageIndex-1, packageFormatCount, 1)
 		return false
 	}
 
@@ -32,7 +32,7 @@ func writeControlFile(arch string) {
 	writeLine(file, "Priority: optional")
 }
 
-func makeDEBPackage(arch string) error {
+func makeDebPackage(arch string) error {
 	// Create control file
 	writeControlFile(arch)
 
@@ -75,12 +75,12 @@ func makeDEBPackage(arch string) error {
 	return nil
 }
 
-func packageDEB() {
-	step("Packaging DEB", packageIndex, packageFormatCount, 1, false)
+func packageDeb() {
+	step("Packaging deb", packageIndex, packageFormatCount, 1, false)
 	packageIndex++
 
 	// Check requirments
-	if !checkDEBRequirements() {
+	if !checkDebRequirements() {
 		return
 	}
 
@@ -88,19 +88,19 @@ func packageDEB() {
 	packagingDir := DEB_PKG_DIR + "/" + config.Application.Name + "-" + config.Application.Version
 	makeDirs([]string{packagingDir, packagingDir + "/DEBIAN", packagingDir + "/usr/bin"}, 0755)
 
-	// Create packages
-	for i, arch := range config.DEB.Architectures {
-		step("Packaging "+arch, i+1, len(config.DEB.Architectures), 2, true)
+	// Create packages++
+	for i, arch := range config.Deb.Architectures {
+		step("Packaging "+arch, i+1, len(config.Deb.Architectures), 2, true)
 
 		if !isBuildArch(arch) {
-			stepError("Can't package arch "+arch+": binary wasn't built. Add linux/"+arch+" to [build]-platforms.", i+1, len(config.DEB.Architectures), 1)
+			stepError("Can't package arch "+arch+": binary wasn't built. Add linux/"+arch+" to [build]-platforms.", i+1, len(config.Deb.Architectures), 1)
 			continue
 		}
 
-		err := makeDEBPackage(arch)
+		err := makeDebPackage(arch)
 
 		if err != nil {
-			stepError(err.Error(), i+1, len(config.DEB.Architectures), 2)
+			stepError(err.Error(), i+1, len(config.Deb.Architectures), 2)
 		}
 	}
 }
