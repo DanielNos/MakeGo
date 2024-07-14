@@ -205,13 +205,13 @@ func checkRequirments() bool {
 }
 
 func clean() {
-	step("Cleaning", 1, 3, 0)
+	step("Cleaning", 1, 3, 0, false)
 	os.RemoveAll(PKG_DIR)
 	os.RemoveAll(BIN_DIR)
 }
 
 func buildBinary() {
-	step("Building binaries", 2, 3, 0)
+	step("Building binaries", 2, 3, 0, false)
 
 	cmd := exec.Command("go", "get")
 	output, err := cmd.CombinedOutput()
@@ -222,7 +222,7 @@ func buildBinary() {
 	os.Mkdir("bin", 0755)
 
 	for i, target := range config.Build.Platforms {
-		step("Building target "+target, i+1, len(config.Build.Platforms), 1)
+		step("Building target "+target, i+1, len(config.Build.Platforms), 1, true)
 
 		splitTarget := strings.Split(target, "/")
 		outputPath := BIN_DIR + "/" + fileName(target)
@@ -243,7 +243,7 @@ func buildBinary() {
 }
 
 func createPackages() {
-	step("Packaging", 3, 3, 0)
+	step("Packaging", 3, 3, 0, false)
 
 	meetsRequirements := checkRequirments()
 	if !meetsRequirements {

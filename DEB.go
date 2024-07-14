@@ -76,7 +76,7 @@ func makeDEBPackage(arch string) error {
 }
 
 func packageDEB() {
-	step("Packaging DEB", packageIndex, packageFormatCount, 1)
+	step("Packaging DEB", packageIndex, packageFormatCount, 1, false)
 	packageIndex++
 
 	// Check requirments
@@ -90,7 +90,7 @@ func packageDEB() {
 
 	// Create packages
 	for i, arch := range config.DEB.Architectures {
-		step("Packaging arch "+arch, i+1, len(config.DEB.Architectures), 2)
+		step("Packaging "+arch, i+1, len(config.DEB.Architectures), 2, true)
 
 		if !isBuildArch(arch) {
 			stepError("Can't package arch "+arch+": binary wasn't built. Add linux/"+arch+" to [build]-platforms.", i+1, len(config.DEB.Architectures), 1)

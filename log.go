@@ -41,7 +41,7 @@ func info(time time.Time, message string) {
 	fmt.Println(C_WHITE_B + message)
 }
 
-func step(message string, stepNumber, totalSteps, depth int) {
+func step(message string, stepNumber, totalSteps, depth int, deepest bool) {
 	timeStamp(time.Now())
 
 	for i := 0; i < depth; i++ {
@@ -51,7 +51,7 @@ func step(message string, stepNumber, totalSteps, depth int) {
 	stepNum(stepNumber, totalSteps)
 
 	color := C_BLUE
-	if depth < len(stepColors) {
+	if !deepest && depth < len(stepColors) {
 		color = stepColors[depth]
 	}
 

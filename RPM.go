@@ -145,7 +145,7 @@ func makeRPMPackage(arch string, buildSource bool) error {
 }
 
 func packageRPM() {
-	step("Packaging RPM", packageIndex, packageFormatCount, 1)
+	step("Packaging RPM", packageIndex, packageFormatCount, 1, false)
 	packageIndex++
 
 	// Check requirments
@@ -171,7 +171,7 @@ func packageRPM() {
 	}
 
 	for i, arch := range config.RPM.Architectures {
-		step("Packaging arch "+arch, i+1, targetcount, 2)
+		step("Packaging "+arch, i+1, targetcount, 2, true)
 		err := makeRPMPackage(arch, false)
 
 		if err != nil {
@@ -181,7 +181,7 @@ func packageRPM() {
 
 	// Create source package
 	if config.RPM.BuildSource {
-		step("Packaging src", targetcount, targetcount, 2)
+		step("Packaging source", targetcount, targetcount, 2, true)
 		err := makeRPMPackage("amd64", true)
 
 		if err != nil {
