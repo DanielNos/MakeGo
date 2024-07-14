@@ -198,25 +198,25 @@ func writeDefaultConfig() {
 
 func checkRequirements() bool {
 	if runtime.GOOS != "linux" {
-		stepError("Can't package on non-linux system.", 3, 3, 0)
+		stepError("Can't package on non-linux system.", 3, int(action)-1, 0)
 		return false
 	}
 	return true
 }
 
 func clean() {
-	step("Cleaning", 1, 3, 0, false)
+	step("Cleaning", 1, int(action)-1, 0, false)
 	os.RemoveAll(PKG_DIR)
 	os.RemoveAll(BIN_DIR)
 }
 
 func buildBinaries() {
-	step("Building binaries", 2, 3, 0, false)
+	step("Building binaries", 2, int(action)-1, 0, false)
 
 	cmd := exec.Command("go", "get")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		stepError("Failed to run get dependecies. "+string(output), 1, 3, 0)
+		stepError("Failed to run get dependecies. "+string(output), 1, int(action)-1, 0)
 	}
 
 	os.Mkdir("bin", 0755)
@@ -243,7 +243,7 @@ func buildBinaries() {
 }
 
 func createPackages() {
-	step("Packaging", 3, 3, 0, false)
+	step("Packaging", 3, int(action)-1, 0, false)
 
 	meetsRequirements := checkRequirements()
 	if !meetsRequirements {
