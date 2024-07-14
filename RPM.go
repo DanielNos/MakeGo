@@ -69,7 +69,7 @@ func writeSPECFile(platform string) {
 
 	fileName := config.Application.Name + "-" + config.Application.Version
 
-	writeLine(file, "%global _find_Debuginfo_opts %{nil}\n%define Debug_package %{nil}\n")
+	writeLine(file, "%global _find_debuginfo_opts %{nil}\n%define debug_package %{nil}\n")
 
 	writeLine(file, "Name: "+config.Application.Name)
 	writeLine(file, "Version: "+config.Application.Version)
