@@ -1,15 +1,6 @@
 package main
 
-func goArchToDebArch(architecture string) string {
-	switch architecture {
-	case "386":
-		return "i386"
-	default:
-		return architecture
-	}
-}
-
-func goArchToRpmArch(architecture string) string {
+func goArchToPackageArch(architecture string) string {
 	switch architecture {
 	case "amd64":
 		return "x86_64"

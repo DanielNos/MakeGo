@@ -83,7 +83,7 @@ func makeRPMPackage(arch string, buildSource bool) error {
 	}
 
 	// Run rpmbuild
-	rpmArch := goArchToRpmArch(arch)
+	rpmArch := goArchToPackageArch(arch)
 
 	cmd := exec.Command("rpmbuild",
 		"--define", "_topdir "+absRpmbuild,
@@ -126,7 +126,7 @@ func packageRPM() {
 	rpmbuild := RPM_PKG_DIR + "/rpmbuild"
 	makeDirs([]string{rpmbuild, rpmbuild + "/BUILD", rpmbuild + "/RPMS", rpmbuild + "/SOURCES", rpmbuild + "/SPECS", rpmbuild + "/SRPMS"}, 0755)
 
-	// Create packages
+	// Copy compressed source
 	cmd := exec.Command("cp",
 		SRC_PKG_DIR+"/"+config.Application.Name+"-"+config.Application.Version+".tar.gz",
 		RPM_PKG_DIR+"/rpmbuild/SOURCES/",
@@ -138,6 +138,7 @@ func packageRPM() {
 		return
 	}
 
+	// Create packages
 	targetCount := len(config.RPM.Architectures)
 	if config.RPM.BuildSource {
 		targetCount++

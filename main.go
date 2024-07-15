@@ -55,6 +55,13 @@ var stringToAction = map[string]Action{
 	"all":     A_All,
 }
 
+func b2i(b bool) int {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func isInstalled(packageName string) bool {
 	cmd := exec.Command(packageName, "--version")
 	_, err := cmd.CombinedOutput()
@@ -72,12 +79,7 @@ func splitPlatArch(platformArchitecture string) (string, string) {
 }
 
 func countPackageFormats() {
-	if config.Deb.Package {
-		packageFormatCount++
-	}
-	if config.RPM.Package {
-		packageFormatCount++
-	}
+	packageFormatCount = b2i(config.Deb.Package) + b2i(config.RPM.Package) + b2i(config.Pkg.Package)
 }
 
 func isBuildArch(arch string) bool {
@@ -89,7 +91,7 @@ func isBuildArch(arch string) bool {
 	return false
 }
 
-func cs() error {
+func compressSource() error {
 	sourcePath := SRC_PKG_DIR + "/" + config.Application.Name + "-" + config.Application.Version
 	sourcePath, _ = filepath.Abs(sourcePath)
 	os.MkdirAll(sourcePath, 0755)
@@ -236,20 +238,20 @@ func writeDefaultConfig() {
 
 func checkRequirements() bool {
 	if runtime.GOOS != "linux" {
-		stepError("Can't package on non-linux system.", 3, int(action)-1, 0)
+		stepError("Can't package on a non-linux system.", 3, int(action)-1, 0)
 		return false
 	}
 	return true
 }
 
 func clean() {
-	step("Cleaning", 1, int(action)-1, 0, false)
+	step("Cleaning", 1, int(action)-2, 0, false)
 	os.RemoveAll(PKG_DIR)
 	os.RemoveAll(BIN_DIR)
 }
 
 func buildBinaries() {
-	step("Building binaries", 2, int(action)-1, 0, false)
+	step("Building binaries", 2, int(action)-2, 0, false)
 
 	cmd := exec.Command("go", "get")
 	output, err := cmd.CombinedOutput()
@@ -281,7 +283,7 @@ func buildBinaries() {
 }
 
 func createPackages() {
-	step("Packaging", 3, int(action)-1, 0, false)
+	step("Packaging", 3, int(action)-2, 0, false)
 
 	// Check requirements
 	meetsRequirements := checkRequirements()
@@ -291,7 +293,7 @@ func createPackages() {
 
 	// Compress source
 	if config.RPM.BuildSource {
-		cs()
+		compressSource()
 	}
 
 	// Package
@@ -300,9 +302,11 @@ func createPackages() {
 	if config.Deb.Package {
 		packageDeb()
 	}
-
 	if config.RPM.Package {
 		packageRPM()
+	}
+	if config.Pkg.Package {
+		packagePkg()
 	}
 }
 
@@ -336,8 +340,6 @@ func main() {
 
 	start := time.Now()
 	info(start, "Building \""+config.Build.Target+"\"")
-
-	clean()
 
 	build()
 

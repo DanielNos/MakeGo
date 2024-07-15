@@ -20,23 +20,24 @@ type MaintainerConfig struct {
 	Email string `toml:"email"`
 }
 
-type DebConfig struct {
+type SimplePackagingConfig struct {
 	Package       bool     `toml:"package"`
 	Architectures []string `toml:"architectures"`
 }
 
-type RPMConfig struct {
+type PackagingConfig struct {
 	Package       bool     `toml:"package"`
 	BuildSource   bool     `toml:"build_src"`
 	Architectures []string `toml:"architectures"`
 }
 
 type Config struct {
-	Application ApplicationConfig `toml:"application"`
-	Build       BuildConfig       `toml:"build"`
-	Maintainer  MaintainerConfig  `toml:"maintainer"`
-	Deb         DebConfig         `toml:"deb"`
-	RPM         RPMConfig         `toml:"rpm"`
+	Application ApplicationConfig     `toml:"application"`
+	Build       BuildConfig           `toml:"build"`
+	Maintainer  MaintainerConfig      `toml:"maintainer"`
+	Deb         SimplePackagingConfig `toml:"deb"`
+	RPM         PackagingConfig       `toml:"rpm"`
+	Pkg         SimplePackagingConfig `toml:"pkg"`
 }
 
 const CONFIG_EMPTY = "[application]\n" +
@@ -63,6 +64,10 @@ const CONFIG_EMPTY = "[application]\n" +
 	"[rpm]\n" +
 	"package = false\n" +
 	"build_src = false\n" +
+	"architectures = [ ]\n\n" +
+
+	"[pkg]\n" +
+	"package = false\n" +
 	"architectures = [ ]\n"
 
 const CONFIG_DEFAULT = "[application]\n" +
@@ -89,6 +94,10 @@ const CONFIG_DEFAULT = "[application]\n" +
 	"[rpm]\n" +
 	"package = false\n" +
 	"build_src = true\n" +
+	"architectures = [ \"amd64\" ]\n\n" +
+
+	"[pkg]\n" +
+	"package = true\n" +
 	"architectures = [ \"amd64\" ]\n"
 
 const CONFIG_ALL = "[application]\n" +
@@ -117,4 +126,8 @@ const CONFIG_ALL = "[application]\n" +
 	"[rpm]\n" +
 	"package = true\n" +
 	"build_src = true\n" +
+	"architectures = [ \"amd64\", \"386\", \"arm\", \"arm64\" ]\n\n" +
+
+	"[pkg]\n" +
+	"package = true\n" +
 	"architectures = [ \"amd64\", \"386\", \"arm\", \"arm64\" ]\n"

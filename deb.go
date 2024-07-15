@@ -24,7 +24,7 @@ func writeControlFile(arch string) {
 
 	writeLine(file, "Package: "+config.Application.Name)
 	writeLine(file, "Version: "+config.Application.Version)
-	writeLine(file, "Architecture: "+goArchToDebArch(arch))
+	writeLine(file, "Architecture: "+goArchToPackageArch(arch))
 	writeLine(file, "Maintainer: "+config.Maintainer.Name+" <"+config.Maintainer.Email+">")
 	writeLine(file, "Description: "+config.Application.Description)
 	writeLine(file, "Section: custom")
@@ -87,12 +87,12 @@ func packageDeb() {
 	packagingDir := DEB_PKG_DIR + "/" + config.Application.Name + "-" + config.Application.Version
 	makeDirs([]string{packagingDir, packagingDir + "/DEBIAN", packagingDir + "/usr/bin"}, 0755)
 
-	// Create packages++
+	// Create packages
 	for i, arch := range config.Deb.Architectures {
 		step("Packaging "+arch, i+1, len(config.Deb.Architectures), 2, true)
 
 		if !isBuildArch(arch) {
-			stepError("Can't package arch "+arch+": binary wasn't built. Add linux/"+arch+" to [build]-platforms.", i+1, len(config.Deb.Architectures), 1)
+			stepError("Can't package arch "+arch+": binary wasn't built. Add linux/"+arch+" to [build]-platforms.", i+1, len(config.Deb.Architectures), 2)
 			continue
 		}
 

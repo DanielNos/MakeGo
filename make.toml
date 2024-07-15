@@ -25,3 +25,7 @@ architectures = [ "amd64", "386", "arm", "arm64" ]
 package = true
 build_src = true
 architectures = [ "amd64", "386", "arm", "arm64" ]
+
+[pkg]
+package = true
+architectures = [ "amd64", "386", "arm", "arm64" ]
