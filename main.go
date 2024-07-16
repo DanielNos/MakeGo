@@ -261,7 +261,7 @@ func buildBinaries() {
 	os.Mkdir("bin", 0755)
 
 	for i, target := range config.Build.Platforms {
-		step("Building target "+target, i+1, len(config.Build.Platforms), 1, true)
+		step("Building platform "+target, i+1, len(config.Build.Platforms), 1, true)
 
 		splitTarget := strings.Split(target, "/")
 		outputPath := BIN_DIR + "/" + fileName(target)

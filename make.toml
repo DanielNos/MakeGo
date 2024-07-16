@@ -23,7 +23,7 @@ architectures = [ "amd64", "386", "arm", "arm64" ]
 
 [rpm]
 package = true
-build_src = true
+build_src = false
 architectures = [ "amd64", "386", "arm", "arm64" ]
 
 [pkg]
