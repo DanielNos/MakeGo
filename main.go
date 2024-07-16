@@ -28,11 +28,10 @@ type Action uint8
 
 const (
 	A_None Action = iota
-	A_Generate
+	A_New
 	A_Clean
 	A_Binary
 	A_Package
-	A_All
 )
 
 var action Action
@@ -45,14 +44,14 @@ var packageIndex = 1
 var generateTarget string
 
 var stringToAction = map[string]Action{
-	"new":     A_Generate,
+	"new":     A_New,
 	"clean":   A_Clean,
 	"cln":     A_Clean,
 	"binary":  A_Binary,
 	"bin":     A_Binary,
 	"package": A_Package,
 	"pkg":     A_Package,
-	"all":     A_All,
+	"all":     A_Package,
 }
 
 func b2i(b bool) int {
@@ -179,7 +178,7 @@ func parseArguments() {
 				if maybeAction == A_None {
 					configFile = arg
 				} else {
-					if maybeAction == A_Generate {
+					if maybeAction == A_New {
 						generateTarget = "*"
 					}
 
@@ -190,7 +189,7 @@ func parseArguments() {
 	}
 
 	if action == A_None {
-		action = A_All
+		action = A_Package
 	}
 	if configFile == "" {
 		configFile = "make.toml"
@@ -245,13 +244,13 @@ func checkRequirements() bool {
 }
 
 func clean() {
-	step("Cleaning", 1, int(action)-2, 0, false)
+	step("Cleaning", 1, int(action)-1, 0, false)
 	os.RemoveAll(PKG_DIR)
 	os.RemoveAll(BIN_DIR)
 }
 
 func buildBinaries() {
-	step("Building binaries", 2, int(action)-2, 0, false)
+	step("Building binaries", 2, int(action)-1, 0, false)
 
 	cmd := exec.Command("go", "get")
 	output, err := cmd.CombinedOutput()
@@ -283,7 +282,7 @@ func buildBinaries() {
 }
 
 func createPackages() {
-	step("Packaging", 3, int(action)-2, 0, false)
+	step("Packaging", 3, int(action)-1, 0, false)
 
 	// Check requirements
 	meetsRequirements := checkRequirements()
@@ -325,7 +324,7 @@ func build() {
 func main() {
 	parseArguments()
 
-	if action == A_Generate {
+	if action == A_New {
 		writeDefaultConfig()
 		return
 	}
