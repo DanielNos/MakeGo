@@ -291,9 +291,7 @@ func createPackages() {
 	}
 
 	// Compress source
-	if config.RPM.BuildSource {
-		compressSource()
-	}
+	compressSource()
 
 	// Package
 	os.MkdirAll(PKG_DIR, 0755)
