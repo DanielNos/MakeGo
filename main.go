@@ -219,7 +219,7 @@ func writeDefaultConfig() {
 		generateTarget = "default"
 	}
 
-	info(time.Now(), "Generating config template "+generateTarget+" to "+configFile+".")
+	info(time.Now(), "Writing config template "+generateTarget+" to "+configFile+".")
 
 	file, err := os.Create(configFile)
 	if err != nil {
@@ -237,7 +237,7 @@ func writeDefaultConfig() {
 
 func checkRequirements() bool {
 	if runtime.GOOS != "linux" {
-		stepError("Can't package on a non-linux system.", 3, int(action)-1, 0)
+		stepError("Can't package on a non-linux operating system.", 3, int(action)-1, 0)
 		return false
 	}
 	return true
