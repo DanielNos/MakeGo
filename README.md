@@ -144,3 +144,10 @@ architectures = [ "amd64" ]
 | architectures | string array | Which architectures should be packaged.                       |
 
 \* Only in RPM config.
+
+**Supported Architectures:**
+
+| Package Format | Architectures          |
+|----------------|------------------------|
+| deb, rpm       | amd64, 386, arm, arm64 |
+| pkg            | amd64                  |
