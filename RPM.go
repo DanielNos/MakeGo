@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 )
 
-func checkRPMRequirments() bool {
+func checkRPMRequirements() bool {
 	if !isInstalled("rpm") {
 		stepError("Can't package RPM without rpm installed.", packageIndex-1, 2, 1)
 		return false
@@ -117,8 +117,8 @@ func packageRPM() {
 	step("Packaging RPM", packageIndex, packageFormatCount, 1, false)
 	packageIndex++
 
-	// Check requirments
-	if !checkRPMRequirments() {
+	// Check requirements
+	if !checkRPMRequirements() {
 		return
 	}
 

@@ -74,7 +74,7 @@ func packagePkg() {
 	step("Packaging pkg", packageIndex, packageFormatCount, 1, false)
 	packageIndex++
 
-	// Check requirments
+	// Check requirements
 	if !checkPkgRequirements() {
 		return
 	}
