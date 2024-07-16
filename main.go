@@ -255,7 +255,7 @@ func buildBinaries() {
 	cmd := exec.Command("go", "get")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		stepError("Failed to run get dependecies. "+string(output), 1, int(action)-1, 0)
+		stepError("Failed to run get dependencies. "+string(output), 1, int(action)-1, 0)
 	}
 
 	os.Mkdir("bin", 0755)

@@ -78,7 +78,7 @@ func packageDeb() {
 	step("Packaging deb", packageIndex, packageFormatCount, 1, false)
 	packageIndex++
 
-	// Check requirments
+	// Check requirements
 	if !checkDebRequirements() {
 		return
 	}
