@@ -16,8 +16,8 @@ import (
 const VERSION = "0.1.0"
 
 const (
-	BIN_DIR      = "bin"
-	PKG_DIR      = "pkg"
+	BIN_DIR      = "build/bin"
+	PKG_DIR      = "build/pkg"
 	SRC_PKG_DIR  = PKG_DIR + "/.src"
 	DEB_PKG_DIR  = PKG_DIR + "/.deb"
 	RPM_PKG_DIR  = PKG_DIR + "/.rpm"
