@@ -9,11 +9,27 @@ import (
 	"runtime"
 	"strings"
 	"time"
-
-	"github.com/BurntSushi/toml"
 )
 
 const VERSION = "0.1.0"
+
+const HELP = `MakeGo
+
+Usage: makego [action] [config]
+
+Actions:
+   help           Shows help.
+   new [template] Creates a config template. Templates: default (or none), all, empty.
+   cln/clean      Removes all build and package files.
+   bin/binary     Builds binaries.
+   pkg/package    Builds binaries and packages them.
+   all (or none)  Does cln -> bin -> pkg.
+
+Flags:
+    -h --help     Show help.
+    -v --version  Show version.
+    -t --time     Print time stamps.
+`
 
 const (
 	BUILD_DIR    = "build"
@@ -123,22 +139,6 @@ func compressSource() error {
 	return nil
 }
 
-func printHelp() {
-	fmt.Println("MakeGo\n")
-	fmt.Println("Usage: makego [action] [config]\n")
-	fmt.Println("Actions:")
-	fmt.Println("      help           Shows help.")
-	fmt.Println("      new [template] Creates a config template. Templates: default (or none), all, empty.")
-	fmt.Println("      cln/clean      Removes all build and package files.")
-	fmt.Println("      bin/binary     Builds binaries.")
-	fmt.Println("      pkg/package    Builds binaries and packages them.")
-	fmt.Println("      all (or none)  Does cln -> bin -> pkg.\n")
-	fmt.Println("Flags:")
-	fmt.Println("      -h --help     Show help.")
-	fmt.Println("      -v --version  Show version.")
-	fmt.Println("      -t --time     Print time stamps.")
-}
-
 func parseArguments() {
 	action = A_None
 	configFile = ""
@@ -158,7 +158,7 @@ func parseArguments() {
 
 		switch arg {
 		case "-h", "--help", "help":
-			printHelp()
+			fmt.Print(HELP)
 			os.Exit(0)
 
 		case "-v", "--version":
@@ -197,42 +197,6 @@ func parseArguments() {
 	}
 	if generateTarget == "*" {
 		generateTarget = "normal"
-	}
-}
-
-func loadConfig() {
-	_, err := toml.DecodeFile(configFile, &config)
-
-	if err != nil {
-		fatal(fmt.Sprintf("Failed to load make config \"%s\": %s", configFile, strings.Split(err.Error(), ":")[1][1:]))
-	}
-
-	countPackageFormats()
-}
-
-func writeDefaultConfig() {
-	configText := CONFIG_DEFAULT
-	if generateTarget == "all" {
-		configText = CONFIG_ALL
-	} else if generateTarget == "empty" {
-		configText = CONFIG_EMPTY
-	} else {
-		generateTarget = "default"
-	}
-
-	info(time.Now(), "Writing config template "+generateTarget+" to "+configFile+".")
-
-	file, err := os.Create(configFile)
-	if err != nil {
-		fatal("Failed to create config: " + err.Error())
-		return
-	}
-	defer file.Close()
-
-	_, err = file.WriteString(configText)
-	if err != nil {
-		stepError("Failed to write config: "+err.Error(), 1, packageFormatCount, 0)
-		return
 	}
 }
 
