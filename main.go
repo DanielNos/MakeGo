@@ -16,8 +16,9 @@ import (
 const VERSION = "0.1.0"
 
 const (
-	BIN_DIR      = "build/bin"
-	PKG_DIR      = "build/pkg"
+	BUILD_DIR    = "build"
+	BIN_DIR      = BUILD_DIR + "/bin"
+	PKG_DIR      = BUILD_DIR + "/pkg"
 	SRC_PKG_DIR  = PKG_DIR + "/.src"
 	DEB_PKG_DIR  = PKG_DIR + "/.deb"
 	RPM_PKG_DIR  = PKG_DIR + "/.rpm"
@@ -247,6 +248,7 @@ func clean() {
 	step("Cleaning", 1, int(action)-1, 0, false)
 	os.RemoveAll(PKG_DIR)
 	os.RemoveAll(BIN_DIR)
+	os.RemoveAll(BUILD_DIR)
 }
 
 func buildBinaries() {
@@ -258,7 +260,7 @@ func buildBinaries() {
 		stepError("Failed to run get dependencies. "+string(output), 1, int(action)-1, 0)
 	}
 
-	os.Mkdir("bin", 0755)
+	os.Mkdir(BIN_DIR, 0755)
 
 	for i, target := range config.Build.Platforms {
 		step("Building platform "+target, i+1, len(config.Build.Platforms), 1, true)
@@ -291,7 +293,9 @@ func createPackages() {
 	}
 
 	// Compress source
-	compressSource()
+	if action >= A_Package && (config.Deb.Package || config.RPM.Package || config.Pkg.Package) {
+		compressSource()
+	}
 
 	// Package
 	os.MkdirAll(PKG_DIR, 0755)
