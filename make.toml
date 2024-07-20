@@ -5,6 +5,12 @@ url = "https://github.com/DanielNos/MakeGo"
 license = "OSL-3.0"
 description = "A Go build and packaging tool."
 long_description = "A Go build and packaging tool."
+gui = false
+
+[desktop_entry]
+name = "MakeGo"
+icon = "icon.png"
+categories = [ "Utility" ]
 
 [maintainer]
 name = "Daniel Nos"
@@ -29,3 +35,7 @@ architectures = [ "amd64", "386", "arm", "arm64" ]
 [pkg]
 package = true
 architectures = [ "amd64" ]
+
+[appimage]
+package = false
+architectures = [ ]

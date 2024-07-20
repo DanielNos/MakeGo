@@ -32,13 +32,17 @@ Flags:
 `
 
 const (
-	BUILD_DIR    = "build"
-	BIN_DIR      = BUILD_DIR + "/bin"
-	PKG_DIR      = BUILD_DIR + "/pkg"
-	SRC_PKG_DIR  = PKG_DIR + "/.src"
-	DEB_PKG_DIR  = PKG_DIR + "/.deb"
-	RPM_PKG_DIR  = PKG_DIR + "/.rpm"
-	ARCH_PKG_DIR = PKG_DIR + "/.arch"
+	BUILD_DIR   = "build"
+	UTILITY_DIR = ".makego"
+
+	BIN_DIR = BUILD_DIR + "/bin"
+	PKG_DIR = BUILD_DIR + "/pkg"
+
+	SRC_PKG_DIR      = PKG_DIR + "/.src"
+	DEB_PKG_DIR      = PKG_DIR + "/.deb"
+	RPM_PKG_DIR      = PKG_DIR + "/.rpm"
+	ARCH_PKG_DIR     = PKG_DIR + "/.arch"
+	APPIMAGE_PKG_DIR = PKG_DIR + "/.appimage"
 )
 
 type Action uint8
@@ -95,7 +99,7 @@ func splitPlatArch(platformArchitecture string) (string, string) {
 }
 
 func countPackageFormats() {
-	packageFormatCount = b2i(config.Deb.Package) + b2i(config.RPM.Package) + b2i(config.Pkg.Package)
+	packageFormatCount = b2i(config.Deb.Package) + b2i(config.RPM.Package) + b2i(config.Pkg.Package) + b2i(config.AppImage.Package)
 }
 
 func isBuildArch(arch string) bool {
@@ -272,6 +276,9 @@ func createPackages() {
 	}
 	if config.Pkg.Package {
 		packagePkg()
+	}
+	if config.AppImage.Package {
+		packageAppImage()
 	}
 }
 

@@ -16,6 +16,13 @@ type ApplicationConfig struct {
 	License         string `toml:"license"`
 	Description     string `toml:"description"`
 	LongDescription string `toml:"long_description"`
+	GUI             bool   `toml:"gui"`
+}
+
+type DesktopEntryConfig struct {
+	Name       string   `toml:"name"`
+	IconPath   string   `toml:"icon"`
+	Categories []string `toml:"categories"`
 }
 
 type BuildConfig struct {
@@ -41,12 +48,14 @@ type PackagingConfig struct {
 }
 
 type Config struct {
-	Application ApplicationConfig     `toml:"application"`
-	Build       BuildConfig           `toml:"build"`
-	Maintainer  MaintainerConfig      `toml:"maintainer"`
-	Deb         SimplePackagingConfig `toml:"deb"`
-	RPM         PackagingConfig       `toml:"rpm"`
-	Pkg         SimplePackagingConfig `toml:"pkg"`
+	Application  ApplicationConfig     `toml:"application"`
+	DesktopEntry DesktopEntryConfig    `toml:"desktop_entry"`
+	Build        BuildConfig           `toml:"build"`
+	Maintainer   MaintainerConfig      `toml:"maintainer"`
+	Deb          SimplePackagingConfig `toml:"deb"`
+	RPM          PackagingConfig       `toml:"rpm"`
+	Pkg          SimplePackagingConfig `toml:"pkg"`
+	AppImage     SimplePackagingConfig `toml:"appimage"`
 }
 
 func loadConfig() {
@@ -92,6 +101,12 @@ description = ""
 long_description = ""
 url = ""
 license = ""
+gui = false
+
+[desktop_entry]
+name = ""
+icon = ""
+categories = [ ]
 
 [maintainer]
 name = ""
@@ -114,6 +129,10 @@ architectures = [ ]
 [pkg]
 package = false
 architectures = [ ]
+
+[appimage]
+package = true
+architectures = [ ]
 `
 
 const CONFIG_DEFAULT = `[application]
@@ -123,6 +142,12 @@ description = "My cool application."
 long_description = "My cool application."
 url = "https://github.com/Username/app"
 license = ""
+gui = false
+
+[desktop_entry]
+name = "App"
+icon = "./icon.png"
+categories = [ "Utility" ]
 
 [maintainer]
 name = "Name Surname"
@@ -145,6 +170,10 @@ architectures = [ "amd64" ]
 [pkg]
 package = true
 architectures = [ "amd64" ]
+
+[appimage]
+package = true
+architectures = [ "amd64" ]
 `
 
 const CONFIG_ALL = `[application]
@@ -154,6 +183,12 @@ description = "My cool application."
 long_description = "My cool application."
 url = "https://github.com/Username/app"
 license = ""
+gui = false
+
+[desktop_entry]
+name = "App"
+icon = "./icon.png"
+categories = [ "Utility" ]
 
 [maintainer]
 name = "Name Surname"
@@ -177,5 +212,9 @@ architectures = [ "amd64", "386", "arm", "arm64" ]
 
 [pkg]
 package = true
-architectures = [ "amd64", "386", "arm", "arm64" ]\
+architectures = [ "amd64", "386", "arm", "arm64" ]
+
+[appimage]
+package = true
+architectures = [ "amd64" ]
 `

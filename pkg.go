@@ -99,7 +99,7 @@ func packagePkg() {
 		step("Packaging "+arch, i+1, len(config.Pkg.Architectures), 2, true)
 
 		if runtime.GOARCH != arch {
-			stepError("Can't package for architecture "+arch+" on "+runtime.GOARCH+" system.", i+1, len(config.Deb.Architectures), 2)
+			stepError("Can't package for architecture "+arch+" on a "+runtime.GOARCH+" system.", i+1, len(config.Deb.Architectures), 2)
 			continue
 		}
 

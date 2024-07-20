@@ -85,7 +85,7 @@ func packageDeb() {
 
 	// Create packagigng directories
 	packagingDir := DEB_PKG_DIR + "/" + config.Application.Name + "-" + config.Application.Version
-	makeDirs([]string{packagingDir, packagingDir + "/DEBIAN", packagingDir + "/usr/bin"}, 0755)
+	makeDirs([]string{packagingDir + "/DEBIAN", packagingDir + "/usr/bin"}, 0755)
 
 	// Create packages
 	for i, arch := range config.Deb.Architectures {
