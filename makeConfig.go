@@ -59,12 +59,13 @@ type Config struct {
 }
 
 func loadConfig() {
-	_, err := toml.DecodeFile(configFile, &config)
+	metaData, err := toml.DecodeFile(configFile, &config)
 
 	if err != nil {
 		fatal(fmt.Sprintf("Failed to load make config \"%s\": %s", configFile, strings.Split(err.Error(), ":")[1][1:]))
 	}
 
+	validateTOML(metaData)
 	countPackageFormats()
 }
 
@@ -91,6 +92,69 @@ func writeDefaultConfig() {
 	if err != nil {
 		stepError("Failed to write config: "+err.Error(), 1, packageFormatCount, 0)
 		return
+	}
+}
+
+func validateTOML(metaData toml.MetaData) {
+	// Check if all keys are defined
+	tomlStructure := [][]string{
+		{"application"},
+		{"application", "name"},
+		{"application", "version"},
+		{"application", "url"},
+		{"application", "license"},
+		{"application", "description"},
+		{"application", "long_description"},
+		{"application", "gui"},
+
+		{"desktop_entry"},
+		{"desktop_entry", "name"},
+		{"desktop_entry", "icon"},
+		{"desktop_entry", "categories"},
+
+		{"maintainer"},
+		{"maintainer", "name"},
+		{"maintainer", "email"},
+
+		{"build"},
+		{"build", "target"},
+		{"build", "flags"},
+		{"build", "platforms"},
+
+		{"deb"},
+		{"deb", "package"},
+		{"deb", "architectures"},
+
+		{"rpm"},
+		{"rpm", "package"},
+		{"rpm", "build_src"},
+		{"rpm", "architectures"},
+
+		{"pkg"},
+		{"pkg", "package"},
+		{"pkg", "architectures"},
+
+		{"appimage"},
+		{"appimage", "package"},
+		{"appimage", "architectures"},
+	}
+
+	for _, key := range tomlStructure {
+		if !metaData.IsDefined(key...) {
+			errorMessage := "Invalid config \"" + configFile + "\": Missing key " + key[0]
+
+			for i := 1; i < len(key); i++ {
+				errorMessage += " - " + key[i]
+			}
+
+			fatal(errorMessage)
+		}
+	}
+
+	// Check if there are additional keys that shouldn't be there
+	undecodedKeys := metaData.Undecoded()
+	if len(undecodedKeys) > 0 {
+		fatal("Invalid config \"" + configFile + "\": Key not found in specification: " + undecodedKeys[0].String())
 	}
 }
 
