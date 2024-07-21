@@ -9,7 +9,7 @@ gui = false
 
 [desktop_entry]
 name = "MakeGo"
-icon = "icon.png"
+icon = ""
 categories = [ "Utility" ]
 
 [maintainer]

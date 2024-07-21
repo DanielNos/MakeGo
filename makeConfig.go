@@ -156,6 +156,11 @@ func validateTOML(metaData toml.MetaData) {
 	if len(undecodedKeys) > 0 {
 		fatal("Invalid config \"" + configFile + "\": Key not found in specification: " + undecodedKeys[0].String())
 	}
+
+	// Check if resources exist
+	if config.DesktopEntry.IconPath != "" && !fileExists(config.DesktopEntry.IconPath) {
+		fatal("Icon file " + config.DesktopEntry.IconPath + " couldn't be found.")
+	}
 }
 
 const CONFIG_EMPTY = `[application]
