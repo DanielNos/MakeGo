@@ -212,6 +212,7 @@ architectures = [ ]
 [appimage]
 package = true
 architectures = [ ]
+custom_apprun = ""
 `
 
 const CONFIG_DEFAULT = `[application]
@@ -253,6 +254,7 @@ architectures = [ "amd64" ]
 [appimage]
 package = true
 architectures = [ "amd64" ]
+custom_apprun = ""
 `
 
 const CONFIG_ALL = `[application]
@@ -296,4 +298,5 @@ architectures = [ "amd64", "386", "arm", "arm64" ]
 [appimage]
 package = true
 architectures = [ "amd64" ]
+custom_apprun = ""
 `
