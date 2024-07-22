@@ -54,12 +54,13 @@ MakeGo can be downloaded as a binary or as a package from the [Releases](https:/
 
 Default action is `all`.
 
+* `help` - Shows help.
 * `new [template]` - Creates a new config from a template. Templates: normal, all, empty
 * `clean` or `cln` - Removes all build and package directories.
 * `binary` or `bin` - Builds project binaries.
 * `package` or `pkg` - Builds project binaries and packages them.
 * `all` - Does the same as package.
-* `help` - Shows help.
+* `purge` - Removes all build and packaging tools.
 
 ### Flags
 

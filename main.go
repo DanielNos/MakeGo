@@ -24,11 +24,14 @@ Actions:
    bin/binary     Builds binaries.
    pkg/package    Builds binaries and packages them.
    all (or none)  Does cln -> bin -> pkg.
+   purge          Removes all build and packaging tools.
 
 Flags:
     -h --help     Show help.
     -v --version  Show version.
     -t --time     Print time stamps.
+
+Documentation: https://danielnos.github.io/docs/MakeGo/index.html
 `
 
 const (
@@ -49,6 +52,7 @@ type Action uint8
 
 const (
 	A_None Action = iota
+	A_Purge
 	A_New
 	A_Clean
 	A_Binary
@@ -65,6 +69,7 @@ var packageIndex = 1
 var generateTarget string
 
 var stringToAction = map[string]Action{
+	"purge":   A_Purge,
 	"new":     A_New,
 	"clean":   A_Clean,
 	"cln":     A_Clean,
@@ -206,26 +211,26 @@ func parseArguments() {
 
 func checkRequirements() bool {
 	if runtime.GOOS != "linux" {
-		stepError("Can't package on a non-linux operating system.", 3, int(action)-1, 0)
+		stepError("Can't package on a non-linux operating system.", 3, int(action)-2, 0)
 		return false
 	}
 	return true
 }
 
 func clean() {
-	step("Cleaning", 1, int(action)-1, 0, false)
+	step("Cleaning", 1, int(action)-2, 0, false)
 	os.RemoveAll(PKG_DIR)
 	os.RemoveAll(BIN_DIR)
 	os.RemoveAll(BUILD_DIR)
 }
 
 func buildBinaries() {
-	step("Building binaries", 2, int(action)-1, 0, false)
+	step("Building binaries", 2, int(action)-2, 0, false)
 
 	cmd := exec.Command("go", "get")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		stepError("Failed to run get dependencies. "+string(output), 1, int(action)-1, 0)
+		stepError("Failed to run get dependencies. "+string(output), 1, int(action)-2, 0)
 	}
 
 	os.Mkdir(BIN_DIR, 0755)
@@ -252,7 +257,7 @@ func buildBinaries() {
 }
 
 func createPackages() {
-	step("Packaging", 3, int(action)-1, 0, false)
+	step("Packaging", 3, int(action)-2, 0, false)
 
 	// Check requirements
 	meetsRequirements := checkRequirements()
@@ -299,6 +304,15 @@ func main() {
 
 	if action == A_New {
 		writeDefaultConfig()
+		return
+	}
+
+	if action == A_Purge {
+		info(time.Now(), "Removing all build and packaging tools.")
+		err := os.RemoveAll(UTILITY_DIR)
+		if err != nil {
+			fatal("Failed to remove build and packaging tools: " + err.Error())
+		}
 		return
 	}
 
