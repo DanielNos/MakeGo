@@ -9,7 +9,7 @@ gui = false
 
 [desktop_entry]
 name = "MakeGo"
-icon = ""
+icon = "icon.png"
 categories = [ "Utility" ]
 
 [maintainer]
@@ -24,7 +24,7 @@ platforms = [ "linux/amd64", "linux/386", "linux/arm", "linux/arm64",
               "darwin/amd64", "darwin/arm64" ]
 
 [deb]
-package = true
+package = false
 architectures = [ "amd64", "386", "arm", "arm64" ]
 
 [rpm]
@@ -37,5 +37,6 @@ package = true
 architectures = [ "amd64" ]
 
 [appimage]
-package = false
-architectures = [ ]
+package = true
+architectures = [ "amd64" ]
+custom_apprun = "./AppRun"

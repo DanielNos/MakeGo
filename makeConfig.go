@@ -47,15 +47,21 @@ type PackagingConfig struct {
 	Architectures []string `toml:"architectures"`
 }
 
+type AppImagePackagingConfig struct {
+	Package       bool     `toml:"package"`
+	Architectures []string `toml:"architectures"`
+	CustomAppRun  string   `toml:"custom_apprun"`
+}
+
 type Config struct {
-	Application  ApplicationConfig     `toml:"application"`
-	DesktopEntry DesktopEntryConfig    `toml:"desktop_entry"`
-	Build        BuildConfig           `toml:"build"`
-	Maintainer   MaintainerConfig      `toml:"maintainer"`
-	Deb          SimplePackagingConfig `toml:"deb"`
-	RPM          PackagingConfig       `toml:"rpm"`
-	Pkg          SimplePackagingConfig `toml:"pkg"`
-	AppImage     SimplePackagingConfig `toml:"appimage"`
+	Application  ApplicationConfig       `toml:"application"`
+	DesktopEntry DesktopEntryConfig      `toml:"desktop_entry"`
+	Build        BuildConfig             `toml:"build"`
+	Maintainer   MaintainerConfig        `toml:"maintainer"`
+	Deb          SimplePackagingConfig   `toml:"deb"`
+	RPM          PackagingConfig         `toml:"rpm"`
+	Pkg          SimplePackagingConfig   `toml:"pkg"`
+	AppImage     AppImagePackagingConfig `toml:"appimage"`
 }
 
 func loadConfig() {
@@ -70,6 +76,7 @@ func loadConfig() {
 }
 
 func writeDefaultConfig() {
+	// Select config template
 	configText := CONFIG_DEFAULT
 	if generateTarget == "all" {
 		configText = CONFIG_ALL
@@ -79,6 +86,7 @@ func writeDefaultConfig() {
 		generateTarget = "default"
 	}
 
+	// Create file
 	info(time.Now(), "Writing config template "+generateTarget+" to "+configFile+".")
 
 	file, err := os.Create(configFile)
@@ -88,6 +96,7 @@ func writeDefaultConfig() {
 	}
 	defer file.Close()
 
+	// Write config
 	_, err = file.WriteString(configText)
 	if err != nil {
 		stepError("Failed to write config: "+err.Error(), 1, packageFormatCount, 0)
@@ -137,6 +146,7 @@ func validateTOML(metaData toml.MetaData) {
 		{"appimage"},
 		{"appimage", "package"},
 		{"appimage", "architectures"},
+		{"appimage", "custom_apprun"},
 	}
 
 	for _, key := range tomlStructure {

@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 func checkAppImageRequirements() error {
@@ -79,17 +80,28 @@ func writeDesktopEntry(directory string) {
 	}
 }
 
-func makeAppImage(stepNumber int, appDir, arch string) error {
-	// Check if architecture is supported
-	if !isStandadtArchitecture(arch) {
-		return errors.New("Can't package AppImage for architecture " + arch + ": unsupported architecture")
+func copyAppRun(stepNumber int, appDir, arch string) error {
+	// Copy custom AppRun
+	if strings.TrimSpace(config.AppImage.CustomAppRun) != "" {
+		if !fileExists(config.AppImage.CustomAppRun) {
+			return errors.New("Custom AppRun " + config.AppImage.CustomAppRun + " wasn't found.")
+		}
+
+		err := copyFile(config.AppImage.CustomAppRun, appDir+"/AppRun")
+		if err != nil {
+			return errors.New("Failed to copy AppRun: " + err.Error())
+		}
+
+		return nil
 	}
 
 	// Download AppRun
 	packageArch := goArchToPackageArch(arch)
-	if !fileExists(UTILITY_DIR + "/AppRun-" + packageArch) {
+	appRunPath := UTILITY_DIR + "/AppRun-" + packageArch
+	if !fileExists(appRunPath) {
 		step("AppRun for architecture "+arch+" wasn't found, downloading it.", stepNumber, len(config.AppImage.Architectures), 2, true)
 
+		// Download it
 		cmd := exec.Command("wget",
 			"https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-"+packageArch,
 		)
@@ -99,12 +111,33 @@ func makeAppImage(stepNumber int, appDir, arch string) error {
 		if err != nil {
 			return errors.New("Failed to download AppRun for " + arch + ": " + err.Error())
 		}
+
+		// Add execute permission
+		err = addXPerm(appRunPath)
+		if err != nil {
+			return errors.New("Failed to add execute permission to AppRun: " + err.Error())
+		}
 	}
 
 	// Copy AppRun
 	err := copyFile(UTILITY_DIR+"/AppRun-"+packageArch, appDir+"/AppRun")
 	if err != nil {
 		return errors.New("Failed to copy AppRun: " + err.Error())
+	}
+
+	return nil
+}
+
+func makeAppImage(stepNumber int, appDir, arch string) error {
+	// Check if architecture is supported
+	if !isStandadtArchitecture(arch) {
+		return errors.New("Can't package AppImage for architecture " + arch + ": unsupported architecture")
+	}
+
+	// Copy AppRun
+	err := copyAppRun(stepNumber, appDir, arch)
+	if err != nil {
+		return err
 	}
 
 	// Copy binary
@@ -114,11 +147,13 @@ func makeAppImage(stepNumber int, appDir, arch string) error {
 	}
 
 	// Package
+	appImageArch := goArchToPackageArch(arch)
 	cmd := exec.Command(
 		"./"+UTILITY_DIR+"/appimagetool-"+goArchToPackageArch(runtime.GOARCH)+".AppImage",
 		APPIMAGE_PKG_DIR+"/"+config.Application.Name+".AppDir",
-		PKG_DIR+"/"+config.DesktopEntry.Name+"-"+packageArch+".AppImage",
+		PKG_DIR+"/"+config.DesktopEntry.Name+"-"+appImageArch+".AppImage",
 	)
+	cmd.Env = append(cmd.Env, "ARCH="+appImageArch)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return errors.New("Failaaed to package binary: " + err.Error() + "\n" + string(output))

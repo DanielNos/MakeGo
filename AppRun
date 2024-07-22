@@ -1,0 +1,10 @@
+#!/bin/bash
+
+CWD=$(pwd)
+
+APPDIR=$(dirname "$(readlink -f "$0")")
+BINARY="$APPDIR/usr/bin/makego"
+
+export CWD
+
+exec "$BINARY" "$@"
