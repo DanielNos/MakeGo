@@ -66,12 +66,6 @@ Default action is `all`.
 * `--help` or `-h` - Shows help.
 * `--version` or `-v` - Shows version.
 * `--time` or `-t` - Prints timestamps for log messages.
-* `new [template]` - Creates a new config from a template. Templates: normal, all, empty.
-* `clean` or `cln` - Removes all build and package directories.
-* `binary` or `bin` - Builds project binaries.
-* `package` or `pkg` - Builds project binaries and packages them.
-* `all` - Does the same as package.
-* `help` - Shows help.
 
 ## Config File
 
@@ -150,5 +144,7 @@ custom_apprun = ""
 
 | Package Format     | Architectures          |
 |--------------------|------------------------|
-| deb, rpm, appimage | amd64, 386, arm, arm64 |
+| deb, RPM, AppImage | amd64, 386, arm, arm64 |
 | pkg                | amd64                  |
+
+It's possible to package other architectures that aren't specified here, but they are either unsupported by the packaging system or not tested
