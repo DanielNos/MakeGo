@@ -22,7 +22,7 @@ func makePkgPackage(arch string) error {
 
 	// Package
 	cmd := exec.Command("makepkg")
-	cmd.Dir, _ = filepath.Abs(ARCH_PKG_DIR)
+	cmd.Dir, _ = filepath.Abs(PKG_PKG_DIR)
 	output, err := cmd.CombinedOutput()
 
 	if err != nil {
@@ -31,7 +31,7 @@ func makePkgPackage(arch string) error {
 
 	// Move package
 	packageName := config.Application.Name + "-" + config.Application.Version + "-1-" + goArchToPackageArch(arch) + ".pkg.tar.gz"
-	err = os.Rename(ARCH_PKG_DIR+"/"+packageName, PKG_DIR+"/"+packageName)
+	err = os.Rename(PKG_PKG_DIR+"/"+packageName, PKG_DIR+"/"+packageName)
 
 	if err != nil {
 		return errors.New("Failed to move package: " + string(output))
@@ -41,7 +41,7 @@ func makePkgPackage(arch string) error {
 }
 
 func writePKGBUILDFile(arch string) {
-	file, err := os.Create(ARCH_PKG_DIR + "/PKGBUILD")
+	file, err := os.Create(PKG_PKG_DIR + "/PKGBUILD")
 	if err != nil {
 		fatal("Failed to create PKGBUILD file: " + err.Error())
 		return
@@ -80,12 +80,12 @@ func packagePkg() {
 	}
 
 	// Create directories
-	makeDirs([]string{ARCH_PKG_DIR + "/SOURCES", ARCH_PKG_DIR + "/SPECS"}, 0755)
+	makeDirs([]string{PKG_PKG_DIR + "/SOURCES", PKG_PKG_DIR + "/SPECS"}, 0755)
 
 	// Copy source
 	cmd := exec.Command("cp",
 		SRC_PKG_DIR+"/"+config.Application.Name+"-"+config.Application.Version+".tar.gz",
-		ARCH_PKG_DIR+"/",
+		PKG_PKG_DIR+"/",
 	)
 	output, err := cmd.CombinedOutput()
 

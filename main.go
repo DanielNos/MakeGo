@@ -41,7 +41,7 @@ const (
 	SRC_PKG_DIR      = PKG_DIR + "/.src"
 	DEB_PKG_DIR      = PKG_DIR + "/.deb"
 	RPM_PKG_DIR      = PKG_DIR + "/.rpm"
-	ARCH_PKG_DIR     = PKG_DIR + "/.arch"
+	PKG_PKG_DIR      = PKG_DIR + "/.pkg"
 	APPIMAGE_PKG_DIR = PKG_DIR + "/.appimage"
 )
 

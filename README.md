@@ -148,7 +148,7 @@ custom_apprun = ""
 
 **Supported Architectures:**
 
-| Package Format | Architectures          |
-|----------------|------------------------|
-| deb, rpm       | amd64, 386, arm, arm64 |
-| pkg            | amd64                  |
+| Package Format     | Architectures          |
+|--------------------|------------------------|
+| deb, rpm, appimage | amd64, 386, arm, arm64 |
+| pkg                | amd64                  |
