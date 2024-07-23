@@ -24,7 +24,7 @@ platforms = [ "linux/amd64", "linux/386", "linux/arm", "linux/arm64",
               "darwin/amd64", "darwin/arm64" ]
 
 [deb]
-package = false
+package = true
 architectures = [ "amd64", "386", "arm", "arm64" ]
 
 [rpm]

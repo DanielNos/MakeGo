@@ -311,7 +311,7 @@ func main() {
 		info(time.Now(), "Removing all build and packaging tools.")
 		err := os.RemoveAll(UTILITY_DIR)
 		if err != nil {
-			fatal("Failed to remove build and packaging tools: " + err.Error())
+			fatal("Failed to remove: " + err.Error())
 		}
 		return
 	}

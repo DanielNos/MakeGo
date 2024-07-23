@@ -131,7 +131,7 @@ custom_apprun = ""
 | flags     | string       | Build flags.                                                                                                                                                              |
 | platforms | string array | Build platforms in format `[GOOS]/[GOARCH]`. List of all operating systems and architectures can be found on [go.dev/doc](https://go.dev/doc/install/source#environment). |
 
-### `deb`, `rpm`, `pkg`
+### `deb`, `rpm`, `pkg`, `appimage`
 
 |     Field     |   Data Type  | Description                                                   |
 |---------------|--------------|---------------------------------------------------------------|
