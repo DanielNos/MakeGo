@@ -80,6 +80,12 @@ description = "My cool application."
 long_description = "My cool application."
 url = "https://github.com/Username/app"
 license = ""
+gui = false
+
+[desktop_entry]
+name = "App"
+icon = "./icon.png"
+categories = [ "Utility" ]
 
 [maintainer]
 name = "Name Surname"
@@ -115,6 +121,15 @@ custom_apprun = ""
 | long_description | string    | A long description of your application. Used only in RPM packages.                    |
 | url              | string    | The url of the main web page for your application.                                    |
 | license          | string    | A short name of your project's license (MIT, AGPLv2, ...). Should not contain spaces. |
+| gui              | bool      | Whether the application has a GUI or is terminal only.                                |
+
+## `desktop_entry`
+
+|      Field       | Data Type    | Description                                                                                                                                                                                      |
+|------------------|--------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name             | string       | The name of the application used in desktop entries of the application.                                                                                                                          |
+| icon             | string       | The icon of the desktop entry.                                                                                                                                                                   |
+| categories       | string array | The categories in which your application falls. List of all valid categories can be found at [specifications.freedesktop.org](https://specifications.freedesktop.org/menu-spec/latest/apa.html). |
 
 ### `maintainer`
 
@@ -131,15 +146,28 @@ custom_apprun = ""
 | flags     | string       | Build flags.                                                                                                                                                              |
 | platforms | string array | Build platforms in format `[GOOS]/[GOARCH]`. List of all operating systems and architectures can be found on [go.dev/doc](https://go.dev/doc/install/source#environment). |
 
-### `deb`, `rpm`, `pkg`, `appimage`
+## `deb`, `pkg`
 
 |     Field     |   Data Type  | Description                                                   |
 |---------------|--------------|---------------------------------------------------------------|
 | package       | bool         | Should the application be packaged for this packaging system. |
-| *build_src    | bool         | Should the source package be build.                           |
 | architectures | string array | Which architectures should be packaged.                       |
 
-\* Only in RPM config.
+## `rpm`
+
+|     Field     |   Data Type  | Description                                                   |
+|---------------|--------------|---------------------------------------------------------------|
+| package       | bool         | Should the application be packaged for this packaging system. |
+| build_src     | bool         | Should the source package be built.                           |
+| architectures | string array | Which architectures should be packaged.                       |
+
+## `appimage`
+
+|     Field     |   Data Type  | Description                                                                 |
+|---------------|--------------|-----------------------------------------------------------------------------|
+| package       | bool         | Should the application be packaged for this packaging system.               |
+| architectures | string array | Which architectures should be packaged.                                     |
+| custom_apprun | string       | Path to custom AppRun. If left empty, official default AppRun will be used. |
 
 **Supported Architectures:**
 
