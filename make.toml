@@ -1,7 +1,7 @@
 [application]
 name = "makego"
 version = "0.1.0"
-url = "https://github.com/DanielNos/MakeGo"
+url = "https://github.com/DanielNos/makego"
 license = "OSL-3.0"
 description = "A Go build and packaging tool."
 long_description = "A Go build and packaging tool."

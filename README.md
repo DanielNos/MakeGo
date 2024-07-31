@@ -4,14 +4,14 @@ MakeGo is a simple tool for compilation and packaging of Go projects. It uses a 
 
 ## How to Build
 
-1. Clone or download the [repository](https://github.com/DanielNos/MakeGo).
+1. Clone or download the [repository](https://github.com/DanielNos/makego).
 2. Build using
     - **MakeGo**: Run `makego`
     - **Go**: Run `go get && go build -ldflags="-w -s" .`
 
 ## Installation
 
-MakeGo can be downloaded as a binary, as a package from the [Releases](https://github.com/DanielNos/MakeGo/releases) page or using Go's package manager.
+MakeGo can be downloaded as a binary, as a package from the [Releases](https://github.com/DanielNos/makego/releases) page or using Go's package manager.
 
 ### Installing Using Go
 

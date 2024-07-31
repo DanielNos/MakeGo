@@ -1,4 +1,4 @@
-module github.com/DanielNos/MakeGo
+module github.com/DanielNos/makego
 
 go 1.22.2
 
