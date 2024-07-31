@@ -11,7 +11,11 @@ MakeGo is a simple tool for compilation and packaging of Go projects. It uses a 
 
 ## Installation
 
-MakeGo can be downloaded as a binary or as a package from the [Releases](https://github.com/DanielNos/MakeGo/releases) page.
+MakeGo can be downloaded as a binary, as a package from the [Releases](https://github.com/DanielNos/MakeGo/releases) page or using Go's package manager.
+
+### Installing Using Go
+
+1. Run: `go install github.com/DanielNos/makego@latest`
 
 ### Installing Binary
 
