@@ -112,6 +112,10 @@ architectures = [ "amd64" ]
 [pkg]
 package = true
 architectures = [ "amd64" ]
+
+[appimage]
+package = true
+architectures = [ "amd64" ]
 custom_apprun = ""
 ```
 
